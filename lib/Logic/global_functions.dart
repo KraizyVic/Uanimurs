@@ -42,7 +42,7 @@ Anime findBestAnimeMatch(String inputTitle, List<Anime> animeList) {
 
 // SHOW BOTTOM SHEETS
 
-void showMyBottomSheet(BuildContext context , Future<Servers> servers) {
+void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episodeNumber,Episodes episodes) {
   showModalBottomSheet(
     context: context,
     //backgroundColor: Colors.blue[100],
@@ -73,7 +73,7 @@ void showMyBottomSheet(BuildContext context , Future<Servers> servers) {
                             itemBuilder: (context,index) {
                               return ListTile(
                                 onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodeId, serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,type: "sub",)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodeId, serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,type: "sub",episodeNumber: episodeNumber,episodes: episodes,)));
                                   //Navigator.pop(bc);
                                 },
                                 title: Text(snapshot.data!.sub[index].serverName,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
@@ -88,7 +88,7 @@ void showMyBottomSheet(BuildContext context , Future<Servers> servers) {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CircularProgressIndicator(),
-                            SizedBox(height: 10,),
+                            SizedBox(height: 15,),
                             Text("Loading Servers ...")
                           ],
                         );

@@ -254,7 +254,7 @@ class _EpisodesPageState extends State<EpisodesPage> {
                 return ListTile(
                   onTap: (){
                     servers = AniWatchService().getServers(snapshot.data!.episodes[index].episodeId);
-                    showMyBottomSheet(context, servers);
+                    showMyBottomSheet(context, servers,index+1,snapshot.data!);
                   },
                   //tileColor: Colors.blue,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

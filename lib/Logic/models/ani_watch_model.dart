@@ -258,3 +258,11 @@ class Track {
     trackDefault: json["default"] ?? false,
   );
 }
+
+class Subtitle {
+  final int startTime;
+  final int endTime;
+  final String text;
+
+  Subtitle({required this.startTime, required this.endTime, required this.text});
+}

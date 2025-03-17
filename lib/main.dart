@@ -4,12 +4,16 @@ import 'package:flutter/services.dart';
 import 'UI/custom_widgets/bottom_nav_bar_pages.dart';
 
 void main() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.dark,
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.edgeToEdge,
+  );
+  SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+      statusBarColor: Colors.transparent
+    )
+  );
   runApp(const MyApp());
 }
 
@@ -34,10 +38,12 @@ class _MyAppState extends State<MyApp> {
       title: 'Flutter Demo',
       themeMode: ThemeMode.system,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFFE01B1),brightness: Brightness.light,primary: Color(0xFFFE01B1),tertiary: Colors.black),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFFE01B1),brightness: Brightness.light,primary: Color(0xFFFE01B1),tertiary: Colors.black,),
+        useMaterial3: true
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFFE01B1),brightness: Brightness.dark,primary: Color(0xFFFE01B1),tertiary: Colors.white),
+        useMaterial3: true
       ),
       home: Scaffold(
         body: mainPages[pageIndex],
