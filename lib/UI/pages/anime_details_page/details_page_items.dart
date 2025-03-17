@@ -5,12 +5,26 @@ import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 
 import '../../../Logic/global_functions.dart';
 import '../../../Logic/models/ani_watch_model.dart';
+import '../buffer_page.dart';
 
-class BannerDetails extends StatelessWidget {
+class BannerDetails extends StatefulWidget {
   final AnimeModel animeModel;
+  final Anime anime;
   final String searchedAnimeName;
-  const BannerDetails({super.key, required this.animeModel, required this.searchedAnimeName});
+  const BannerDetails({
+    super.key,
+    required this.animeModel,
+    required this.anime,
+    required this.searchedAnimeName,
+  });
 
+  @override
+  State<BannerDetails> createState() => _BannerDetailsState();
+}
+
+class _BannerDetailsState extends State<BannerDetails> {
+  late Future<Servers> servers;
+  late Future<Episodes> episodes;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -18,7 +32,7 @@ class BannerDetails extends StatelessWidget {
       height: double.maxFinite,
       child: Stack(
         children: [
-          Image.network(animeModel.bannerImage,fit: BoxFit.cover,height: double.maxFinite,width: double.maxFinite,),
+          Image.network(widget.animeModel.bannerImage,fit: BoxFit.cover,height: double.maxFinite,width: double.maxFinite,),
           Container(
             decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -37,18 +51,18 @@ class BannerDetails extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Spacer(),
-                Text("Found: $searchedAnimeName"),
+                Text("Found: ${widget.searchedAnimeName}"),
                 SizedBox(height: 5,),
                 Row(
                   children: [
-                    ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(animeModel.coverImage.extraLarge, width: 100,fit: BoxFit.cover,)),
+                    ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(widget.animeModel.coverImage.extraLarge, width: 100,fit: BoxFit.cover,)),
                     SizedBox(width: 10,),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 5,),
-                          Text(animeModel.title.english != "null" ? animeModel.title.english.toUpperCase() : animeModel.title.romaji.toUpperCase(), maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                          Text(widget.animeModel.title.english != "null" ? widget.animeModel.title.english.toUpperCase() : widget.animeModel.title.romaji.toUpperCase(), maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
                           SizedBox(height: 5,),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,9 +76,92 @@ class BannerDetails extends StatelessWidget {
                               SizedBox(width: 6,),
                               Expanded(child: CustomTextButton(onTap: (){}, buttonName: "+ List")),
                               SizedBox(width: 6,),
-                              CustomTextButton(onTap: (){
-                                AniWatchService().getEpisodes("solo-leveling-season-2-arise-from-the-shadow-19413?ref=search");
-                              }, buttonName: "Play",isFilled: true,),
+                              CustomTextButton(
+                                onTap: (){
+                                  episodes = AniWatchService().getEpisodes(widget.anime.id);
+                                  showModalBottomSheet(
+                                    context: context,
+                                    //backgroundColor: Colors.blue[100],
+                                    elevation: 10,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                    ),
+                                    isScrollControlled: true,
+                                    enableDrag: true,
+                                    useSafeArea: true,
+                                    builder: (context){
+                                      return SizedBox(
+                                        height: MediaQuery.of(context).size.height*0.35,
+                                        child: Center(
+                                          child: FutureBuilder(
+                                            future: episodes,
+                                            builder: (context,snapshot){
+                                              if (snapshot.hasData){
+                                                servers = AniWatchService().getServers(snapshot.data!.episodes[0].episodeId);
+                                                return Column(
+                                                children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                                      child: Text("SERVERS",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                                                    ),
+                                                    Expanded(
+                                                      child: Center(
+                                                        child: FutureBuilder(
+                                                          future: servers,
+                                                            builder: (context,serverSnapshot){
+                                                              if(serverSnapshot.hasData){
+                                                                return ListView.builder(
+                                                                  itemCount: serverSnapshot.data!.sub.length,
+                                                                  itemBuilder: (context,index){
+                                                                    return ListTile(
+                                                                      onTap: (){
+                                                                        Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: 1,episodes: snapshot.data!,)));
+                                                                        //Navigator.pop(bc);
+                                                                      },
+                                                                      title: Text(serverSnapshot.data!.sub[index].serverName,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+                                                                      subtitle: Text("Multi Quality"),
+                                                                    );
+                                                                  },
+                                                                );
+                                                              }else if(serverSnapshot.hasError){
+                                                                return Center(child: Text("Error loading SERVER list"),);
+                                                              }else{
+                                                                return Column(
+                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                  children: [
+                                                                    CircularProgressIndicator(),
+                                                                    SizedBox(height: 15,),
+                                                                    Text("Loading Servers ...")
+                                                                  ]
+                                                                );
+                                                              }
+                                                            }
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  );
+                                              }else if(snapshot.hasError){
+                                                return Center(child: Text("Error loading EPISODES list"),);
+                                              }else{
+                                                return Column(
+                                                  children: [
+                                                    CircularProgressIndicator(),
+                                                    SizedBox(height: 15,),
+                                                    Text("Loading Episodes ...")
+                                                  ],
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        )
+                                      );
+                                    }
+                                  );
+                                },
+                                buttonName: "Play",
+                                isFilled: true,
+                              ),
                             ],
                           )
                         ],

@@ -34,7 +34,7 @@ class _PlayerControlsState extends State<PlayerControls> {
         children: [
           Row(
             children: [
-              Text("Episode: "),
+              //Text("Episode: "),
               Spacer(),
               IconButton(onPressed: (){}, icon: Icon(Icons.menu)
               ),

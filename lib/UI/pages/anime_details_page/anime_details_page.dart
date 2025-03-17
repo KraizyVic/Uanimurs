@@ -49,7 +49,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                   height: MediaQuery.of(context).size.height*0.4,
                   child: Stack(
                     children: [
-                      BannerDetails(animeModel: widget.animeModel,searchedAnimeName: bestMatch.name,),
+                      BannerDetails(animeModel: widget.animeModel,searchedAnimeName: bestMatch.name, anime: bestMatch,),
                       Column(
                         children: [
                           AppBar(
