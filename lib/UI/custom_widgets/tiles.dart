@@ -20,14 +20,14 @@ class AnimeListTile extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(animeModel.coverImage.large,fit: BoxFit.cover,height: 100,width: 70,)),
+                ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(animeModel.coverImage.large ?? "",fit: BoxFit.cover,height: 100,width: 70,)),
                 SizedBox(width: 10,),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        animeModel.title.english == "null" ? animeModel.title.romaji : animeModel.title.english,
+                        animeModel.title.english == "null" ? animeModel.title.romaji ?? "" : animeModel.title.english ?? "",
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -78,7 +78,7 @@ class AnimeTile extends StatelessWidget {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(animeModel.coverImage.large,fit: BoxFit.cover,width: double.maxFinite,),
+                    child: Image.network(animeModel.coverImage.large ?? "",fit: BoxFit.cover,width: double.maxFinite,),
                   ),
                 ),
                 SizedBox(height: 10,),
@@ -134,7 +134,7 @@ class CarouselTile extends StatelessWidget {
                   Spacer(),
                   Row(
                     children: [
-                      ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(animeModel.coverImage.extraLarge, width: 100,fit: BoxFit.cover,)),
+                      ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(animeModel.coverImage.extraLarge ?? "", width: 100,fit: BoxFit.cover,)),
                       SizedBox(width: 10,),
                       Expanded(
                         child: Column(
@@ -150,7 +150,7 @@ class CarouselTile extends StatelessWidget {
                               ],
                             ),
                             SizedBox(height: 5,),
-                            Text(animeModel.title.english, maxLines: 2, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                            Text(animeModel.title.english ?? "", maxLines: 2, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
                             SizedBox(height: 5,),
                             Text(animeModel.description,overflow: TextOverflow.ellipsis,maxLines: 3,),
                           ],

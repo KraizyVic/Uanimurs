@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/Logic/services/aniwatch_services.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 
+import '../../Logic/bloc/my_list_cubit.dart';
 import '../../Logic/global_functions.dart';
 import '../../Logic/models/ani_watch_model.dart';
 import '../pages/buffer_page.dart';
@@ -55,14 +57,14 @@ class _BannerDetailsState extends State<BannerDetails> {
                 SizedBox(height: 5,),
                 Row(
                   children: [
-                    ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(widget.animeModel.coverImage.extraLarge, width: 100,fit: BoxFit.cover,)),
+                    ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(widget.animeModel.coverImage.extraLarge ?? "", width: 100,fit: BoxFit.cover,)),
                     SizedBox(width: 10,),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 5,),
-                          Text(widget.animeModel.title.english != "null" ? widget.animeModel.title.english.toUpperCase() : widget.animeModel.title.romaji.toUpperCase(), maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                          Text(widget.animeModel.title.english != "null" ? widget.animeModel.title.english?.toUpperCase() ?? "" : widget.animeModel.title.romaji?.toUpperCase() ?? "", maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
                           SizedBox(height: 5,),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -74,7 +76,28 @@ class _BannerDetailsState extends State<BannerDetails> {
                                 ),
                               ),
                               SizedBox(width: 6,),
-                              Expanded(child: CustomTextButton(onTap: (){}, buttonName: "+ List")),
+                              Expanded(
+                                child: BlocBuilder<WatchListCubit, List<AnimeModel>>(
+                                  builder: (context, state) {
+                                    // Compare by malId (or your unique identifier)
+                                    final isInList = state.any((anime) => anime.malId == widget.animeModel.malId);
+
+                                    return CustomTextButton(
+                                      isFilled: isInList,
+                                      onTap: () {
+                                        if (isInList) {
+                                          // Remove by ID instead of entire object
+                                          BlocProvider.of<WatchListCubit>(context).removeAnime(widget.animeModel);
+                                        } else {
+                                          BlocProvider.of<WatchListCubit>(context)
+                                              .addAnime(widget.animeModel);
+                                        }
+                                      },
+                                      buttonName: isInList ? "- List" : "+ List",
+                                    );
+                                  },
+                                ),
+                              ),
                               SizedBox(width: 6,),
                               CustomTextButton(
                                 onTap: (){
@@ -220,13 +243,13 @@ class OverviewContent extends StatelessWidget {
             Text("Native title:",style: TextStyle(fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary,fontSize: 18),),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(animeModel.title.native),
+              child: Text(animeModel.title.native ?? ""),
             ),
             SizedBox(height: 10,),
             Text("Romanji title:",style: TextStyle(fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary,fontSize: 18),),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(animeModel.title.romaji),
+              child: Text(animeModel.title.romaji ?? ""),
             ),
             SizedBox(height: 10,),
             Text("Description:",style: TextStyle(fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary,fontSize: 18),),
@@ -278,7 +301,7 @@ class CastPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: animeModel.characters.edges.length,
+      itemCount: animeModel.characters.edges?.length,
       itemBuilder: (context,index)=>Padding(
         padding: const EdgeInsets.all(8.0),
         child: ClipRRect(
@@ -293,7 +316,7 @@ class CastPage extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Image.network(
-                      animeModel.characters.edges[index].node!.image.large,
+                      animeModel.characters.edges?[index].node!.image?.large ?? "",
                       height: 60,width: 60,fit: BoxFit.cover,
                     ),
                   ),
@@ -302,8 +325,8 @@ class CastPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("${animeModel.characters.edges[index].node!.name.first} ${ animeModel.characters.edges[index].node!.name.last}"),
-                      Text(animeModel.characters.edges[index].role)
+                      Text("${animeModel.characters.edges?[index].node!.name?.first ?? ""} ${ animeModel.characters.edges?[index].node!.name?.last ?? ""}"),
+                      Text(animeModel.characters.edges?[index].role ?? "")
                     ]
                   ),
                 ]

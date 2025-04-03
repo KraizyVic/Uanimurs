@@ -22,8 +22,8 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
   @override
   void initState() {
     // TODO: implement initState
-    searchedAnimes = AniWatchService().searchAnime(widget.animeModel.title.english == "null" ? widget.animeModel.title.romaji.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() : widget.animeModel.title.english.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase());
-    print("Searching For: ${widget.animeModel.title.english.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase()}");
+    searchedAnimes = AniWatchService().searchAnime(widget.animeModel.title.english == "null" ? widget.animeModel.title.romaji!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() : widget.animeModel.title.english!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase());
+    print("Searching For: ${widget.animeModel.title.english?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase()}");
     super.initState();
   }
 
@@ -41,7 +41,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
         builder: (context,snapshot) {
           if(snapshot.hasData){
             print(snapshot.data!.animes.length);
-            bestMatch = findBestAnimeMatch(widget.animeModel.title.english , snapshot.data!.animes);
+            bestMatch = findBestAnimeMatch(widget.animeModel.title.english ?? "" , snapshot.data!.animes);
             print(bestMatch.name);
             return Column(
               children: [

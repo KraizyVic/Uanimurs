@@ -1,5 +1,13 @@
+import 'package:isar/isar.dart';
+
+part 'anime_model.g.dart';
+
+@Collection()
 class AnimeModel {
-  final int id;
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  final int alId;
   final int malId;
   final Date startDate;
   final Date endDate;
@@ -20,7 +28,7 @@ class AnimeModel {
   final String description;
   final Characters characters;
   AnimeModel({
-    required this.id,
+    required this.alId,
     required this.malId,
     required this.startDate,
     required this.endDate,
@@ -42,7 +50,7 @@ class AnimeModel {
     required this.characters,
   });
   factory AnimeModel.fromJson(Map<String, dynamic> json) => AnimeModel(
-    id: json["id"] ?? 0,
+    alId: json["id"] ?? 0,
     malId: json["idMal"] ?? 0,
     startDate: json["startDate"] != null ? Date.fromJson(json["startDate"]) : Date(day: 0, month: 0, year: 0),
     endDate: json["endDate"] != null ? Date.fromJson(json["endDate"]) : Date(day: 0, month: 0, year: 0),
@@ -65,28 +73,30 @@ class AnimeModel {
   );
 }
 
+@Embedded()
 class Characters {
-  final List<AnimeEdge> edges;
+  final List<AnimeEdge>? edges;
   Characters({
-    required this.edges,
+    this.edges,
   });
   factory Characters.fromJson(Map<String, dynamic> json) => Characters(
     edges: List<AnimeEdge>.from(json["edges"].map((x) => AnimeEdge.fromJson(x))),
   );
 }
 
+@Embedded()
 class AnimeEdge {
   final int? id;
   final String? name;
-  final String role;
+  final String? role;
   final AnimeNode? node;
-  final List<VoiceActor> voiceActors;
+  final List<VoiceActor>? voiceActors;
   AnimeEdge({
-    required this.id,
-    required this.name,
-    required this.role,
-    required this.node,
-    required this.voiceActors,
+    this.id,
+    this.name,
+    this.role,
+    this.node,
+    this.voiceActors,
   });
   factory AnimeEdge.fromJson(Map<String, dynamic> json) => AnimeEdge(
     id: json["id"],
@@ -97,14 +107,15 @@ class AnimeEdge {
   );
 }
 
+@Embedded()
 class AnimeNode {
   final String? age;
-  final Name name;
-  final AnimeImage image;
+  final Name? name;
+  final AnimeImage? image;
   AnimeNode({
-    required this.age,
-    required this.name,
-    required this.image,
+    this.age,
+    this.name,
+    this.image,
   });
   factory AnimeNode.fromJson(Map<String, dynamic> json) => AnimeNode(
     age: json["age"],
@@ -113,12 +124,13 @@ class AnimeNode {
   );
 }
 
+@Embedded()
 class AnimeImage {
-  final String large;
-  final String medium;
+  final String? large;
+  final String? medium;
   AnimeImage({
-    required this.large,
-    required this.medium,
+    this.large,
+    this.medium,
   });
   factory AnimeImage.fromJson(Map<String, dynamic> json) => AnimeImage(
     large: json["large"] ?? "null",
@@ -126,12 +138,13 @@ class AnimeImage {
   );
 }
 
+@Embedded()
 class Name {
-  final String first;
+  final String? first;
   final String? last;
   Name({
-    required this.first,
-    required this.last,
+    this.first,
+    this.last,
   });
   factory Name.fromJson(Map<String, dynamic> json) => Name(
     first: json["first"] ?? "",
@@ -139,12 +152,13 @@ class Name {
   );
 }
 
+@Embedded()
 class VoiceActor {
-  final Name name;
-  final AnimeImage image;
+  final Name? name;
+  final AnimeImage? image;
   VoiceActor({
-    required this.name,
-    required this.image,
+    this.name,
+    this.image,
   });
   factory VoiceActor.fromJson(Map<String, dynamic> json) => VoiceActor(
     name: Name.fromJson(json["name"]),
@@ -152,14 +166,15 @@ class VoiceActor {
   );
 }
 
+@Embedded()
 class CoverImage {
-  final String medium;
-  final String large;
-  final String extraLarge;
+  final String? medium;
+  final String? large;
+  final String? extraLarge;
   CoverImage({
-    required this.medium,
-    required this.large,
-    required this.extraLarge,
+    this.medium,
+    this.large,
+    this.extraLarge,
   });
   factory CoverImage.fromJson(Map<String, dynamic> json) => CoverImage(
     medium: json["medium"] ?? "null",
@@ -168,14 +183,15 @@ class CoverImage {
   );
 }
 
+@Embedded()
 class Date {
-  final int day;
-  final int month;
-  final int year;
+  final int? day;
+  final int? month;
+  final int? year;
   Date({
-    required this.day,
-    required this.month,
-    required this.year,
+    this.day,
+    this.month,
+    this.year,
   });
   factory Date.fromJson(Map<String, dynamic> json) => Date(
     day: json["day"] ?? 0,
@@ -184,14 +200,15 @@ class Date {
   );
 }
 
+@Embedded()
 class Title {
-  final String native;
-  final String english;
-  final String romaji;
+  final String? native;
+  final String? english;
+  final String? romaji;
   Title({
-    required this.native,
-    required this.english,
-    required this.romaji,
+    this.native,
+    this.english,
+    this.romaji,
   });
   factory Title.fromJson(Map<String, dynamic> json) => Title(
     native: json["native"] ?? "null",
@@ -200,14 +217,15 @@ class Title {
   );
 }
 
+@Embedded()
 class Trailer {
-  final String id;
-  final String site;
-  final String thumbnail;
+  final String? id;
+  final String? site;
+  final String? thumbnail;
   Trailer({
-    required this.id,
-    required this.site,
-    required this.thumbnail,
+    this.id,
+    this.site,
+    this.thumbnail,
   });
   factory Trailer.fromJson(Map<String, dynamic> json) => Trailer(
     id: json["id"] ?? "null",
