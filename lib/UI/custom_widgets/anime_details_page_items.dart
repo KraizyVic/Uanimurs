@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uanimurs/Logic/bloc/account_cubit.dart';
+import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/Logic/services/aniwatch_services.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
@@ -77,23 +79,23 @@ class _BannerDetailsState extends State<BannerDetails> {
                               ),
                               SizedBox(width: 6,),
                               Expanded(
-                                child: BlocBuilder<WatchListCubit, List<AnimeModel>>(
+                                child: BlocBuilder<AccountCubit, AccountModel?>(
                                   builder: (context, state) {
+
                                     // Compare by malId (or your unique identifier)
-                                    final isInList = state.any((anime) => anime.malId == widget.animeModel.malId);
+                                    final isInList = state?.watchList.any((anime) => anime.malId == widget.animeModel.malId);
 
                                     return CustomTextButton(
-                                      isFilled: isInList,
-                                      onTap: () {
-                                        if (isInList) {
+                                      isFilled: isInList != null && isInList,
+                                      onTap: () async{
+                                        if (isInList != null && isInList) {
                                           // Remove by ID instead of entire object
-                                          BlocProvider.of<WatchListCubit>(context).removeAnime(widget.animeModel);
+                                          await BlocProvider.of<AccountCubit>(context).removeFromWatchList(widget.animeModel);
                                         } else {
-                                          BlocProvider.of<WatchListCubit>(context)
-                                              .addAnime(widget.animeModel);
+                                          await BlocProvider.of<AccountCubit>(context).addToWatchList(widget.animeModel);
                                         }
                                       },
-                                      buttonName: isInList ? "- List" : "+ List",
+                                      buttonName: isInList != null && isInList ? "- List" : "+ List",
                                     );
                                   },
                                 ),

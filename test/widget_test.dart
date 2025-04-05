@@ -7,13 +7,29 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:uanimurs/Logic/models/account_model.dart';
+import 'package:uanimurs/Logic/models/anime_model.dart';
 
 import 'package:uanimurs/main.dart';
+import 'package:isar/isar.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    late Isar isar;
+
+    setUp(() async {
+      final dir = await getTemporaryDirectory();
+      isar = await Isar.open(
+        [AccountModelSchema, AnimeModelSchema],
+        directory: dir.path,
+      );
+    });
+
+    testWidgets('MyApp builds', (tester) async {
+      await tester.pumpWidget(MyApp(isar: isar));
+    });
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
