@@ -28,7 +28,7 @@ void main() {
     });
 
     testWidgets('MyApp builds', (tester) async {
-      await tester.pumpWidget(MyApp(isar: isar));
+      await tester.pumpWidget(MyApp(isar: isar,));
     });
 
     // Verify that our counter starts at 0.

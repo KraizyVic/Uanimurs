@@ -37,6 +37,7 @@ class SettingsModel {
     );
   }
 }
+
 @embedded
 class AppearanceSettings {
   final int themeMode;

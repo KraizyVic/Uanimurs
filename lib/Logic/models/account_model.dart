@@ -9,19 +9,25 @@ part 'account_model.g.dart';
 class AccountModel {
   Id id = Isar.autoIncrement;
 
+  bool isActive = false;
   final String username;
   final String accountType;
+  String created = "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}";
   final String? pfp;
 
   final SettingsModel settings; // Embedded
-  final IsarLinks<AnimeModel> watchList = IsarLinks<
-      AnimeModel>(); // Relationship to AnimeModel List
+  final IsarLinks<AnimeModel> watchList = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
+  final IsarLinks<AnimeModel> watchHistory = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
+  final IsarLinks<AnimeModel> favorites = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
+  final List<String> searchHistory = []; // List of search terms
+
 
   AccountModel({
     required this.username,
     this.accountType = "Local Account",
     this.pfp,
     required this.settings,
+
   });
 
   AccountModel copyWith({

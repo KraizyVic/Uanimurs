@@ -15,28 +15,22 @@ import 'UI/pages/welcome_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   // Enable full edge-to-edge mode
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.edgeToEdge,
   );
-
   // Set transparent system UI
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.white,
       statusBarColor: Colors.transparent,
-      systemNavigationBarContrastEnforced: false, // Important for Android
-      systemStatusBarContrastEnforced: false,
     ),
   );
-
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
     [AccountModelSchema, AnimeModelSchema],
     directory: dir.path,
   );
-
   runApp(
     BlocProvider(
       create: (context) => AccountCubit(isar),
@@ -54,35 +48,99 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,AccountModel?>(
+    return BlocBuilder<AccountCubit,List<AccountModel?>>(
       builder: (context,state) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          themeMode: ThemeMode.system,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Color(0xFFFF1493),
-              primary: Color(0xFFFF1493),
-              brightness: Brightness.light,
-              tertiary: Colors.black,
+        if(state.isEmpty){
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.system,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(0xFFFF1493),
+                primary: Color(0xFFFF1493),
+                brightness: Brightness.light,
+                tertiary: Colors.black,
+              ),
+              useMaterial3: true,
             ),
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Color(0xFFFF1493),
-              primary: Color(0xFFFF1493),
-              brightness: Brightness.dark,
-              tertiary: Colors.white,
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(0xFFFF9F00),
+                //surface: state!.settings.appearance.amoledBackground ? Colors.black : ,
+                primary: Color(0xFFFF9F00),
+                brightness: Brightness.dark,
+                tertiary: Colors.white,
+              ),
+              useMaterial3: true,
             ),
-            useMaterial3: true,
-          ),
-          title: 'Uanimurs',
-          home: state == null ? WelcomePage() : MainPage(),
-        );
+            title: 'Uanimurs',
+            home: WelcomePage(),
+          );
+        }else if(state.length == 1){
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.system,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(0xFFFF1493),
+                primary: Color(0xFFFF1493),
+                brightness: Brightness.light,
+                tertiary: Colors.black,
+              ),
+              useMaterial3: true,
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(0xFFFF1493),
+                //surface: state!.settings.appearance.amoledBackground ? Colors.black : ,
+                primary: Color(0xFFFF1493),
+                brightness: Brightness.dark,
+                tertiary: Colors.white,
+              ),
+              useMaterial3: true,
+            ),
+            title: 'Uanimurs',
+            home: MainPage(),
+          );
+        }else{
+          Color color = Color(context.watch<AccountCubit>().activeAccount!.settings.appearance.primaryColor);
+          AccountModel activeAccount = context.watch<AccountCubit>().activeAccount!;
+          ThemeMode themeMode = ThemeMode.system;
+          if(context.watch<AccountCubit>().activeAccount!.settings.appearance.themeMode == 1){
+            themeMode = ThemeMode.light;
+          }else if(context.watch<AccountCubit>().activeAccount!.settings.appearance.themeMode == 2){
+            themeMode = ThemeMode.dark;
+          }
+
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            themeMode: themeMode,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: color,
+                primary: color,
+                brightness: Brightness.light,
+                tertiary: Colors.black,
+              ),
+              useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: color,
+                surface: activeAccount.settings.appearance.amoledBackground ? Colors.black : null,
+                primary: color,
+                brightness: Brightness.dark,
+                tertiary: Colors.white,
+              ),
+              useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+
+            ),
+            title: 'Uanimurs',
+            home: SelectAccountPage(),
+          );
+        }
       }
     );
   }
@@ -112,23 +170,26 @@ class _MainPageState extends State<MainPage> {
     MorePage(),
   ];
 
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        fixedColor: Colors.pink,
-        currentIndex: pageIndex,
-        onTap: changePage,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'My list'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'More'),
-        ],
-      ),
-      body: pages[pageIndex],
+    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+      builder: (context,state) {
+        return Scaffold(
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            fixedColor: Theme.of(context).colorScheme.primary,
+            currentIndex: pageIndex,
+            onTap: changePage,
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+              BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'My list'),
+              BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'More'),
+            ],
+          ),
+          body: pages[pageIndex],
+        );
+      }
     );
   }
 }

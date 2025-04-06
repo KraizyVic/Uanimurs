@@ -6,7 +6,6 @@ part 'anime_model.g.dart';
 class AnimeModel {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true)
   final int alId;
   final int malId;
   final Date startDate;

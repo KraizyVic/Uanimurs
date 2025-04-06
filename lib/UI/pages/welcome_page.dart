@@ -4,6 +4,7 @@ import 'package:uanimurs/UI/pages/home_page.dart';
 import 'package:uanimurs/constants.dart';
 
 import '../../Logic/bloc/account_cubit.dart';
+import '../../Logic/models/account_model.dart';
 import '../../main.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -148,7 +149,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   hintText: "Username",
                   filled: true,
                   focusColor: Theme.of(context).colorScheme.primary,
-                  fillColor: Colors.white.withAlpha(50),
+                  fillColor: Theme.of(context).colorScheme.tertiary.withAlpha(50),
                 ),
 
               ),
@@ -178,7 +179,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               height: double.maxFinite,
                               width: double.maxFinite,
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(50),
+                                color: Theme.of(context).colorScheme.tertiary.withAlpha(50),
                                 shape: BoxShape.circle,
                               ),
                               child: pfps[index] == null ? Icon(Icons.person) : Image.asset(pfps[index]!,fit: BoxFit.cover,),
@@ -190,7 +191,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 color: Theme.of(context).colorScheme.tertiary.withAlpha(100),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.check,color: Theme.of(context).colorScheme.primary,),
+                              child: Icon(Icons.check,color: Theme.of(context).colorScheme.primary,size: 40,),
                             ) : SizedBox.shrink(),
                           ],
                         ),
@@ -204,11 +205,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   child: MaterialButton(
                     color: Theme.of(context).colorScheme.primary,
                     onPressed: () async{
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (_) => Center(child: CircularProgressIndicator()),
-                      );
+
                       await context.read<AccountCubit>().createAccount(username.text,pfps[_selectedPfpIndex],);
                       Navigator.pop(context);
                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
@@ -226,4 +223,80 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 }
+
+class SelectAccountPage extends StatelessWidget {
+  const SelectAccountPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+      builder: (context,state)=>Scaffold(
+        /*appBar: AppBar(
+          title: Text("Select Account"),
+        ),*/
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Who's Whatching ?",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+            SizedBox(height: 20,),
+            Center(
+              child: SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: state.length,
+                  itemBuilder: (context,index){
+                    return MaterialButton(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      onPressed: ()async{
+                        await context.read<AccountCubit>().setActiveAccount(state[index]!);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
+                      },
+                      elevation: 0,
+                      child: SizedBox(
+                        width: 100,
+                        child: Column(
+                          children: [
+                            state[index]?.pfp == null ? CircleAvatar(radius: 100,child: Icon(Icons.person),) : CircleAvatar(radius: 70,backgroundImage: AssetImage(state[index]!.pfp!),),
+                            Expanded(
+                              child: Text(state[index]?.username ?? "",
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 3,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: 20,),
+            SizedBox(
+              width: 200,
+              child: MaterialButton(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: EdgeInsets.symmetric(
+                  vertical: 15
+                ),
+                onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>RegistrationPage())),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add),
+                      SizedBox(width: 10,),
+                      Text("Add Account")
+                    ],
+                  )
+              ),
+            )
+          ],
+        ),
+      )
+    );
+  }
+}
+
 

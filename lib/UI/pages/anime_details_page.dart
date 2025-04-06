@@ -86,6 +86,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         onTap: changePage,
+        elevation: 0,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         currentIndex: pageIndex,
         items: [

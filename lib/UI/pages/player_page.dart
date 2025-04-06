@@ -52,7 +52,7 @@ class _PlayerPageState extends State<PlayerPage> {
     super.initState();
 
     // Use edgeToEdge instead of immersiveSticky
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,overlays: [SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     // Keep the transparent UI overlays
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -66,12 +66,6 @@ class _PlayerPageState extends State<PlayerPage> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    /*WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.edgeToEdge,
-        overlays: [],
-      );
-    });*/
     isSelectedSubtitleIndex = widget.streamingLink.tracks.indexWhere((t) => t.trackDefault);
     _qualityLinks = AniWatchService().getQualityLinks(widget.streamingLink.sources[0].url);
     _initializeVideoPlayer(widget.streamingLink.sources[0].url);

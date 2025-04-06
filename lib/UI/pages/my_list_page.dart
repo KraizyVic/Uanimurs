@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Logic/bloc/account_cubit.dart';
-import 'package:uanimurs/Logic/bloc/my_list_cubit.dart';
 import 'package:uanimurs/Logic/models/account_model.dart';
-import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
 
 import '../custom_widgets/tiles.dart';
@@ -18,10 +16,10 @@ class MyListPage extends StatelessWidget {
         title: Text("My List"),
         forceMaterialTransparency: true,
       ),
-      body: BlocBuilder<AccountCubit, AccountModel?>(
+      body: BlocBuilder<AccountCubit, List<AccountModel?>>(
           builder: (context, state) {
             // Check if state is null or watchList is empty
-            if (state == null || state.watchList.isEmpty) {
+            if (context.read<AccountCubit>().activeAccount!.watchList.isEmpty) {
               return Center(
                 child: Text("Your watchlist is empty"),
               );
@@ -35,9 +33,9 @@ class MyListPage extends StatelessWidget {
                     crossAxisSpacing: 5,
                     mainAxisSpacing: 5
                 ),
-                itemCount: state.watchList.length,
+                itemCount: context.read<AccountCubit>().activeAccount!.watchList.length,
                 itemBuilder: (context, index) {
-                  final animeList = state.watchList.toList();
+                  final animeList = context.read<AccountCubit>().activeAccount!.watchList.toList();
                   return AnimeTile(
                     animeModel: animeList[index],
                     onPressed: () => Navigator.push(

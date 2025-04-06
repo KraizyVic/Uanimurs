@@ -17,7 +17,8 @@ class CustomTextButton extends StatelessWidget {
       height: 50,
       decoration: BoxDecoration(
         border: Border.all(color: Theme.of(context).colorScheme.primary),
-        borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(10),
+        color: isFilled?Theme.of(context).colorScheme.primary:Colors.transparent,
       ),
       child: MaterialButton(
         shape: RoundedRectangleBorder(

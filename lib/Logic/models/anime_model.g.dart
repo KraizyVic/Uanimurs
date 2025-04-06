@@ -129,21 +129,7 @@ const AnimeModelSchema = CollectionSchema(
   deserialize: _animeModelDeserialize,
   deserializeProp: _animeModelDeserializeProp,
   idName: r'id',
-  indexes: {
-    r'alId': IndexSchema(
-      id: 3413266828654574002,
-      name: r'alId',
-      unique: true,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'alId',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    )
-  },
+  indexes: {},
   links: {},
   embeddedSchemas: {
     r'Date': DateSchema,
@@ -414,73 +400,11 @@ void _animeModelAttach(IsarCollection<dynamic> col, Id id, AnimeModel object) {
   object.id = id;
 }
 
-extension AnimeModelByIndex on IsarCollection<AnimeModel> {
-  Future<AnimeModel?> getByAlId(int alId) {
-    return getByIndex(r'alId', [alId]);
-  }
-
-  AnimeModel? getByAlIdSync(int alId) {
-    return getByIndexSync(r'alId', [alId]);
-  }
-
-  Future<bool> deleteByAlId(int alId) {
-    return deleteByIndex(r'alId', [alId]);
-  }
-
-  bool deleteByAlIdSync(int alId) {
-    return deleteByIndexSync(r'alId', [alId]);
-  }
-
-  Future<List<AnimeModel?>> getAllByAlId(List<int> alIdValues) {
-    final values = alIdValues.map((e) => [e]).toList();
-    return getAllByIndex(r'alId', values);
-  }
-
-  List<AnimeModel?> getAllByAlIdSync(List<int> alIdValues) {
-    final values = alIdValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'alId', values);
-  }
-
-  Future<int> deleteAllByAlId(List<int> alIdValues) {
-    final values = alIdValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'alId', values);
-  }
-
-  int deleteAllByAlIdSync(List<int> alIdValues) {
-    final values = alIdValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'alId', values);
-  }
-
-  Future<Id> putByAlId(AnimeModel object) {
-    return putByIndex(r'alId', object);
-  }
-
-  Id putByAlIdSync(AnimeModel object, {bool saveLinks = true}) {
-    return putByIndexSync(r'alId', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByAlId(List<AnimeModel> objects) {
-    return putAllByIndex(r'alId', objects);
-  }
-
-  List<Id> putAllByAlIdSync(List<AnimeModel> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'alId', objects, saveLinks: saveLinks);
-  }
-}
-
 extension AnimeModelQueryWhereSort
     on QueryBuilder<AnimeModel, AnimeModel, QWhere> {
   QueryBuilder<AnimeModel, AnimeModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhere> anyAlId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'alId'),
-      );
     });
   }
 }
@@ -547,96 +471,6 @@ extension AnimeModelQueryWhere
         lower: lowerId,
         includeLower: includeLower,
         upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhereClause> alIdEqualTo(
-      int alId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'alId',
-        value: [alId],
-      ));
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhereClause> alIdNotEqualTo(
-      int alId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'alId',
-              lower: [],
-              upper: [alId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'alId',
-              lower: [alId],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'alId',
-              lower: [alId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'alId',
-              lower: [],
-              upper: [alId],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhereClause> alIdGreaterThan(
-    int alId, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'alId',
-        lower: [alId],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhereClause> alIdLessThan(
-    int alId, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'alId',
-        lower: [],
-        upper: [alId],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<AnimeModel, AnimeModel, QAfterWhereClause> alIdBetween(
-    int lowerAlId,
-    int upperAlId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'alId',
-        lower: [lowerAlId],
-        includeLower: includeLower,
-        upper: [upperAlId],
         includeUpper: includeUpper,
       ));
     });
