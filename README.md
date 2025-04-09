@@ -3,18 +3,18 @@
 An anime streaming app made entirely with flutter 
 
 Features:
-    - Beautiful and intuitive UI
-    - Customisation
-    - Supports Multi-account CRUD stuff ("Locally. No fancy stuff") Fancy stuff coming soon 
-    - Has an internal Update mechanism - From Github
-    - Has search functionality
+1. Beautiful and intuitive UI
+2. Customisation
+3. Supports Multi-account CRUD stuff ("Locally. No fancy stuff") Fancy stuff coming soon
+4. Has an internal Update mechanism - From Github
+5. Has search functionality
 
 Credits:
-    Anilist - Anime details data source
-    Special thanks to [falcon71181](https://github.com/falcon71181) for [Anime-API](https://github.com/falcon71181/Anime-API)
+1. Anilist - Anime details data source
+2.  Special thanks to [falcon71181](https://github.com/falcon71181) for [Anime-API](https://github.com/falcon71181/Anime-API)
         which I use for [Aniwatch](https://aniwatchtv.to/) data source.
-    [FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
-    [Aniwatch.to](https://github.com/frostnova721/animestream) - Anime data source - And for just existing in general
+3. FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
+4. [Aniwatch.to](https://github.com/frostnova721/animestream) - Anime data source - And for just existing in general
 
 ## Getting Started
 
