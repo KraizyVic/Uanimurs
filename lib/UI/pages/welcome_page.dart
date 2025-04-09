@@ -105,9 +105,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("Register"),
-      ),
+      appBar: AppBar(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(10.0),
@@ -128,7 +126,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       height: 150,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(100),
-                        child: pfps[_selectedPfpIndex] == null ? Container(color: Theme.of(context).colorScheme.primary.withAlpha(50),child: Icon(Icons.person,size: 50,)) : Image.asset(pfps[_selectedPfpIndex]!,fit: BoxFit.cover,),
+                        child: pfps[_selectedPfpIndex] == null ? Container(color: Theme.of(context).colorScheme.primary.withAlpha(50),child: Icon(Icons.person,size: 50,)) : AnimatedContainer(duration: Duration(milliseconds: 500),decoration: BoxDecoration(image: DecorationImage(image: AssetImage(pfps[_selectedPfpIndex]!),fit: BoxFit.cover),borderRadius: BorderRadius.circular(100)),),
                       ),
                     ),
                   ],
@@ -234,6 +232,8 @@ class SelectAccountPage extends StatelessWidget {
         /*appBar: AppBar(
           title: Text("Select Account"),
         ),*/
+        extendBody: true,
+        extendBodyBehindAppBar: true,
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

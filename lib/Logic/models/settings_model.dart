@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import '../../constants.dart';
+
 part 'settings_model.g.dart';
 
 @embedded
@@ -48,7 +50,7 @@ class AppearanceSettings {
   // Constructor with default values
   const AppearanceSettings({
     this.themeMode = 0,  // 0 = System, 1 = Light, 2 = Dark
-    this.primaryColor = 0xFF2196F3, // Default Blue
+    this.primaryColor = 0xFFFF9900, // Default Blue
     this.amoledBackground = false,
     this.useMaterialUI = true,
   });

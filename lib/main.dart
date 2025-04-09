@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uanimurs/Logic/models/settings_model.dart';
 import 'package:uanimurs/UI/pages/home_page.dart';
 import 'package:uanimurs/UI/pages/more_page.dart';
 import 'package:uanimurs/UI/pages/my_list_page.dart';
@@ -15,22 +16,29 @@ import 'UI/pages/welcome_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Enable full edge-to-edge mode
+
+  // Make the navigation bar transparent, not white
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+      statusBarColor: Colors.transparent,
+      // Add these to ensure transparency
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark, // Or Brightness.light depending on your theme
+    ),
+  );
+
+  // Edge-to-edge after the overlay style
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.edgeToEdge,
   );
-  // Set transparent system UI
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.white,
-      statusBarColor: Colors.transparent,
-    ),
-  );
+
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
     [AccountModelSchema, AnimeModelSchema],
     directory: dir.path,
   );
+
   runApp(
     BlocProvider(
       create: (context) => AccountCubit(isar),
@@ -79,66 +87,86 @@ class _MyAppState extends State<MyApp> {
             home: WelcomePage(),
           );
         }else if(state.length == 1){
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.system,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Color(0xFFFF1493),
-                primary: Color(0xFFFF1493),
-                brightness: Brightness.light,
-                tertiary: Colors.black,
-              ),
-              useMaterial3: true,
-            ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Color(0xFFFF1493),
-                //surface: state!.settings.appearance.amoledBackground ? Colors.black : ,
-                primary: Color(0xFFFF1493),
-                brightness: Brightness.dark,
-                tertiary: Colors.white,
-              ),
-              useMaterial3: true,
-            ),
-            title: 'Uanimurs',
-            home: MainPage(),
-          );
-        }else{
-          Color color = Color(context.watch<AccountCubit>().activeAccount!.settings.appearance.primaryColor);
-          AccountModel activeAccount = context.watch<AccountCubit>().activeAccount!;
+          Color color = Color(context.watch<AccountCubit>().activeAccount?.settings.appearance.primaryColor ?? 0xFFFF1493);
+          AccountModel activeAccount = context.watch<AccountCubit>().activeAccount ?? AccountModel(username: "Unknown",settings: SettingsModel()) ;
           ThemeMode themeMode = ThemeMode.system;
-          if(context.watch<AccountCubit>().activeAccount!.settings.appearance.themeMode == 1){
+          if(context.watch<AccountCubit>().activeAccount?.settings.appearance.themeMode == 1){
             themeMode = ThemeMode.light;
-          }else if(context.watch<AccountCubit>().activeAccount!.settings.appearance.themeMode == 2){
+          }else if(context.watch<AccountCubit>().activeAccount?.settings.appearance.themeMode == 2){
             themeMode = ThemeMode.dark;
           }
-
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            themeMode: themeMode,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: color,
-                primary: color,
-                brightness: Brightness.light,
-                tertiary: Colors.black,
-              ),
-              useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              systemNavigationBarColor: Colors.transparent,
+              statusBarColor: Colors.transparent,
             ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: color,
-                surface: activeAccount.settings.appearance.amoledBackground ? Colors.black : null,
-                primary: color,
-                brightness: Brightness.dark,
-                tertiary: Colors.white,
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              themeMode: themeMode,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: color,
+                  primary: color,
+                  brightness: Brightness.light,
+                  tertiary: Colors.black,
+                ),
+                useMaterial3: activeAccount.settings.appearance.useMaterialUI,
               ),
-              useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: color,
+                  surface: activeAccount.settings.appearance.amoledBackground ? Colors.black : null,
+                  primary: color,
+                  brightness: Brightness.dark,
+                  tertiary: Colors.white,
+                ),
+                useMaterial3: activeAccount.settings.appearance.useMaterialUI,
 
+              ),
+              title: 'Uanimurs',
+              home: MainPage(),
             ),
-            title: 'Uanimurs',
-            home: SelectAccountPage(),
+          );
+        }else{
+          Color color = Color(context.watch<AccountCubit>().activeAccount?.settings.appearance.primaryColor ?? 0xFFFF1493);
+          AccountModel activeAccount = context.watch<AccountCubit>().activeAccount ?? AccountModel(username: "Unknown",settings: SettingsModel()) ;
+          ThemeMode themeMode = ThemeMode.system;
+          if(context.watch<AccountCubit>().activeAccount?.settings.appearance.themeMode == 1){
+            themeMode = ThemeMode.light;
+          }else if(context.watch<AccountCubit>().activeAccount?.settings.appearance.themeMode == 2){
+            themeMode = ThemeMode.dark;
+          }
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              systemNavigationBarColor: Colors.transparent,
+              statusBarColor: Colors.transparent,
+            ),
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              themeMode: themeMode,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: color,
+                  primary: color,
+                  brightness: Brightness.light,
+                  tertiary: Colors.black,
+                ),
+                useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+              ),
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: color,
+                  surface: activeAccount.settings.appearance.amoledBackground ? Colors.black : null,
+                  primary: color,
+                  brightness: Brightness.dark,
+                  tertiary: Colors.white,
+                ),
+                useMaterial3: activeAccount.settings.appearance.useMaterialUI,
+
+              ),
+              title: 'Uanimurs',
+              home: SelectAccountPage(),
+            ),
           );
         }
       }
@@ -176,6 +204,7 @@ class _MainPageState extends State<MainPage> {
       builder: (context,state) {
         return Scaffold(
           bottomNavigationBar: BottomNavigationBar(
+            elevation: 0,
             type: BottomNavigationBarType.fixed,
             fixedColor: Theme.of(context).colorScheme.primary,
             currentIndex: pageIndex,

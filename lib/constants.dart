@@ -18,17 +18,15 @@ List<String?> pfps = [
 ];
 
 Map<String,int> appColors = {
-  "Orange Peel Orange" : 0xFFFF9F00,
-  "Amazon Orange" : 0xFFFF9900,
+  "Amazon Orange (Default)" : 0xFFFF9900,
   "Chinese Orange" : 0xFFF37042,
   "Antique Green" : 0xFF3E8F78,
-  "Financial Wellness Green" : 0xFF24E23D,
+  //"Financial Wellness Green" : 0xFF24E23D,
   "Neon Green" : 0xFF39FF14,
   "Electric Red" : 0xFFE60000,
   "Fuchsia Red" : 0xFFAB3475,
   "Neon Pink" : 0xFFF433FF,
   "Deep Pink" : 0xFFFF1493,
   "Agility Blue" : 0xFF0077D7,
-  "Windows Blue" : 0xFF357EC7,
   "Ultramarine Blue" : 0xFF357EC7,
 };

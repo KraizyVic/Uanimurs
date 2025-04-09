@@ -144,13 +144,13 @@ class CarouselTile extends StatelessWidget {
                               children: [
                                 Icon(Icons.star,color: Theme.of(context).colorScheme.primary,),
                                 SizedBox(width: 5,),
-                                Text("${animeModel.meanScore / 10} / 10"),
+                                Text("${animeModel.meanScore / 10}"),
                                 Spacer(),
                                 Text(animeModel.startDate.year.toString())
                               ],
                             ),
                             SizedBox(height: 5,),
-                            Text(animeModel.title.english ?? "", maxLines: 2, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                            Text(animeModel.title.english == "null" ? animeModel.title.romaji ?? "" : animeModel.title.english ?? "", maxLines: 2, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
                             SizedBox(height: 5,),
                             Text(animeModel.description,overflow: TextOverflow.ellipsis,maxLines: 3,),
                           ],
@@ -167,4 +167,31 @@ class CarouselTile extends StatelessWidget {
     );
   }
 }
+
+
+class ErrorMessage extends StatelessWidget {
+  const ErrorMessage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Image.asset("lib/UI/assets/ms_girl__gundam_heavyarms_custom_ew__48__by_bryanz09_dcz1ct2.png",height: 150,width: 150,),
+        Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Failed to load.",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),),
+                SizedBox(height: 10,),
+                Text("1. Check your internet connection.\n2. Pull down to refresh and WAIT\nOR\nTry again later."),
+              ],
+            ))
+      ],
+    );
+  }
+}
+
+
+
 

@@ -16,8 +16,8 @@ class MorePage extends StatelessWidget {
       builder: (context,state) {
         return Scaffold(
           appBar: AppBar(
-            title: Text("More"),
-            forceMaterialTransparency: true,
+            //title: Text("More"),
+            //forceMaterialTransparency: true,
           ),
           body: Column(
             children: [

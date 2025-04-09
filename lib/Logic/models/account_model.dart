@@ -10,10 +10,15 @@ class AccountModel {
   Id id = Isar.autoIncrement;
 
   bool isActive = false;
-  final String username;
-  final String accountType;
+
+  // Remove 'final' to allow reassignment
+  String username;
+  String accountType;
+
   String created = "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}";
-  final String? pfp;
+
+  // Remove 'late final' to allow reassignment
+  String? pfp;
 
   final SettingsModel settings; // Embedded
   final IsarLinks<AnimeModel> watchList = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
@@ -21,15 +26,14 @@ class AccountModel {
   final IsarLinks<AnimeModel> favorites = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
   final List<String> searchHistory = []; // List of search terms
 
-
   AccountModel({
     required this.username,
     this.accountType = "Local Account",
     this.pfp,
     required this.settings,
-
   });
 
+  // Keep your copyWith method for creating new instances
   AccountModel copyWith({
     String? username,
     String? accountType,

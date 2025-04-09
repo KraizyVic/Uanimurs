@@ -6,9 +6,14 @@ import 'package:uanimurs/constants.dart';
 import '../../../Logic/bloc/account_cubit.dart';
 import '../../../Logic/models/account_model.dart';
 
-class AppearancePage extends StatelessWidget {
+class AppearancePage extends StatefulWidget {
   const AppearancePage({super.key});
 
+  @override
+  State<AppearancePage> createState() => _AppearancePageState();
+}
+
+class _AppearancePageState extends State<AppearancePage> {
   @override
   Widget build(BuildContext context) {
     return Builder(
@@ -16,6 +21,7 @@ class AppearancePage extends StatelessWidget {
         return Scaffold(
           body: BlocBuilder<AccountCubit,List<AccountModel?>>(
             builder: (context,state) {
+              int selectedColorIndex = appColors.values.toList().indexOf(context.watch<AccountCubit>().activeAccount!.settings.appearance.primaryColor);
               return CustomScrollView(
                 slivers: [
                   SliverAppBar(
@@ -94,7 +100,8 @@ class AppearancePage extends StatelessWidget {
                           title: Text(appColors.keys.elementAt(index)),
                           leading: CircleAvatar(
                             backgroundColor: Color(appColors.values.elementAt(index)),
-                          )
+                          ),
+                          trailing: selectedColorIndex == index ? Icon(Icons.check,color: Theme.of(context).colorScheme.primary,) : null,
                         );
                       }
                     ),
