@@ -13,7 +13,7 @@ Credits:
 1. Anilist - Anime details data source
 2.  Special thanks to [falcon71181](https://github.com/falcon71181) for [Anime-API](https://github.com/falcon71181/Anime-API)
         which I use for [Aniwatch](https://aniwatchtv.to/) data source.
-3. FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
+3. [FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
 4. [Aniwatch.to](https://github.com/frostnova721/animestream) - Anime data source - And for just existing in general
 
 ## Getting Started
