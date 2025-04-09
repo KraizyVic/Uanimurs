@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 
+import '../pages/more_page_pages/about_page.dart';
 import '../pages/more_page_pages/appearance_page.dart';
 class FunctionalSettings extends StatelessWidget {
   const FunctionalSettings({super.key});
@@ -51,7 +52,7 @@ class FunctionalSettings extends StatelessWidget {
             leading: Icon(Icons.info_outline),
             title: Text("About"),
             subtitle: Text("About Uanimurs"),
-            onTap: () {}
+            onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()))
           ),
         ],
       ),

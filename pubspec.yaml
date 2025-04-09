@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.8.0-260.0.dev
@@ -33,6 +33,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -45,13 +47,17 @@ dependencies:
   subtitle: ^0.1.4
   flutter_bloc: ^9.1.0
   isar:
-    version: *isar_version
+    version:
     hosted: https://pub.isar-community.dev/
   isar_flutter_libs: # contains Isar Core
-    version: *isar_version
+    version:
     hosted: https://pub.isar-community.dev/
 
   path_provider: ^2.1.5
+  package_info_plus: ^8.3.0
+  flutter_local_notifications: ^19.0.0
+  dio: ^5.8.0+1
+  permission_handler: ^12.0.0
 
 dev_dependencies:
   flutter_test:

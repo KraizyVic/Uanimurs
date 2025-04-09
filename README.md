@@ -1,6 +1,20 @@
-# uanimurs
+# Uanimurs
 
-A new Flutter project.
+An anime streaming app made entirely with flutter 
+
+Features:
+    Beautiful and intuitive UI
+    Customisation
+    Supports Multi-account CRUD stuff ("Locally. No fancy stuff") Fancy stuff coming soon 
+    Has an internal Update mechanism - From Github
+    Has search functionality
+
+Credits:
+    Anilist - Anime details data source
+    Special thanks to [falcon71181](https://github.com/falcon71181) for [Anime-API](https://github.com/falcon71181/Anime-API)
+        which I use for [Aniwatch](https://aniwatchtv.to/) data source.
+    [FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
+    [Aniwatch.to](https://github.com/frostnova721/animestream) - Anime data source - And for just existing in general
 
 ## Getting Started
 

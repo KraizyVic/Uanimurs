@@ -12,6 +12,7 @@ import 'package:uanimurs/UI/pages/search_page.dart';
 import 'Logic/bloc/account_cubit.dart';
 import 'Logic/models/account_model.dart';
 import 'Logic/models/anime_model.dart';
+import 'Logic/services/update_service.dart';
 import 'UI/pages/welcome_page.dart';
 
 void main() async {
@@ -56,6 +57,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Safely check for updates after build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdates();
+    });
+  }
+
+  void _checkForUpdates() async {
+    await UpdateService.checkForUpdates(context); // Now context is safe to use
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AccountCubit,List<AccountModel?>>(
