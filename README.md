@@ -3,11 +3,11 @@
 An anime streaming app made entirely with flutter 
 
 Features:
-    Beautiful and intuitive UI
-    Customisation
-    Supports Multi-account CRUD stuff ("Locally. No fancy stuff") Fancy stuff coming soon 
-    Has an internal Update mechanism - From Github
-    Has search functionality
+    - Beautiful and intuitive UI
+    - Customisation
+    - Supports Multi-account CRUD stuff ("Locally. No fancy stuff") Fancy stuff coming soon 
+    - Has an internal Update mechanism - From Github
+    - Has search functionality
 
 Credits:
     Anilist - Anime details data source
