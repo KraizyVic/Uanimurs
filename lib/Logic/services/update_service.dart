@@ -38,7 +38,13 @@ class UpdateService {
           builder: (context){
             return AlertDialog(
               title: Text("No updates available"),
-              content: Text("You are on the latest version."),
+              content: Row(
+                children: [
+                  Image.asset("lib/UI/assets/thumbs_up.png",width: 100,height: 100,fit: BoxFit.cover,),
+                  SizedBox(width: 10,),
+                  Expanded(child: Text("You are using the latest version of Uanimurs"))
+                ],
+              ),
             );
           }
         );

@@ -75,8 +75,14 @@ class _PlayerPageState extends State<PlayerPage> {
 
 
   Future<void> _initializeVideoPlayer(String videoUrl) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
-      ..initialize().then((_) {
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(videoUrl),
+      httpHeaders: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.11',
+        "origin": "https://aniwatchtv.to/",
+        "referer": "https://aniwatchtv.to/",
+      },
+    )..initialize().then((_) {
         if (mounted) {
           setState(() {});
         }

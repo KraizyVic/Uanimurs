@@ -103,7 +103,7 @@ class _BannerDetailsState extends State<BannerDetails> {
                               SizedBox(width: 6,),
                               CustomTextButton(
                                 onTap: (){
-                                  episodes = AniWatchService().getEpisodes(widget.anime.id);
+                                  episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId);
                                   showModalBottomSheet(
                                     context: context,
                                     //backgroundColor: Colors.blue[100],

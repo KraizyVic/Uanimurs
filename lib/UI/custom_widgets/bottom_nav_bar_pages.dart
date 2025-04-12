@@ -13,7 +13,7 @@ Widget detailsPages(int pageIndex, AnimeModel animeModel, Anime bestMatch,) {
     case 0:
       return OverviewContent(animeModel: animeModel);
     case 1:
-      return EpisodesPage(animeId: bestMatch.id, searchedAnimeName: bestMatch.name);
+      return EpisodesPage(animeId: bestMatch.aniwatchId, searchedAnimeName: bestMatch.name);
     case 2:
       return CastPage(animeModel: animeModel);
     case 3:

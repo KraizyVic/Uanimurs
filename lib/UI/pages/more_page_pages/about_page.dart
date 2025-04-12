@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:uanimurs/Logic/models/github_model.dart';
 
+import '../../../Logic/bloc/account_cubit.dart';
+import '../../../Logic/global_functions.dart';
+import '../../../Logic/services/github_service.dart';
 import '../../../Logic/services/update_service.dart';
 
 class AboutPage extends StatefulWidget {
@@ -29,6 +34,7 @@ class _AboutPageState extends State<AboutPage> {
       appBuildNumber = packageInfo.buildNumber;
     });
   }
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -52,6 +58,10 @@ class _AboutPageState extends State<AboutPage> {
                     trailing: Text(appName),
                   ),
                   ListTile(
+                    title: Text("Number of accounts"),
+                    trailing: Text("${context.read<AccountCubit>().state.length}"),
+                  ),
+                  ListTile(
                     title: Text("App version"),
                     trailing: Text(appVersion),
                   ),
@@ -59,12 +69,57 @@ class _AboutPageState extends State<AboutPage> {
                     title: Text("App build number"),
                     trailing: Text(appBuildNumber),
                   ),
+                  ListTile(
+                    leading: Icon(Icons.info_outline),
+                    title: Text("About Uanimurs"),
+                    trailing: Text(""),
+                    onTap: (){
+                      Future<RepositoryModel> fetchRepo = GithubService().getRepository();
+                      showRepositoryData(context, fetchRepo);
+                    }
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.person_2_outlined),
+                    title: Text("About Developer"),
+                    trailing: Text(""),
+                    onTap: (){
+                      Future<DeveloperModel> fetchDeveloper = GithubService().getDeveloper();
+                      showDeveloperData(context, fetchDeveloper);
+                    }
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.privacy_tip_outlined),
+                    title: Text("Privacy Policy"),
+                    trailing: Text(""),
+                    onTap: (){
+                      showPrivacyPolicy(context);
+                    }
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.format_align_left_sharp),
+                    title: Text("Terms of Service"),
+                    trailing: Text(""),
+                    onTap: ()=> showTermsOfService(context),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.contact_support_outlined),
+                    title: Text("Contact Us"),
+                    trailing: Text(""),
+                    onTap: (){}
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.feedback_outlined),
+                    title: Text("Feedback"),
+                    trailing: Text(""),
+                    onTap: (){}
+                  ),
                   TextButton(
                     onPressed: (){
                       UpdateService.checkForUpdates(context);
                     },
                     child: Text("Check for updates")
                   ),
+                  SizedBox(height: 100,),
                 ]
               )
             )

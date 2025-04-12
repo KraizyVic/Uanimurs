@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/settings_model.dart';
+import 'package:uanimurs/Logic/models/watch_history.dart';
 import 'package:uanimurs/UI/pages/home_page.dart';
 import 'package:uanimurs/UI/pages/more_page.dart';
 import 'package:uanimurs/UI/pages/my_list_page.dart';
@@ -36,7 +38,7 @@ void main() async {
 
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
-    [AccountModelSchema, AnimeModelSchema],
+    [AccountModelSchema, AnimeModelSchema, WatchHistorySchema,AnimeSchema],
     directory: dir.path,
   );
 
@@ -62,9 +64,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     // Safely check for updates after build is complete
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkForUpdates();
-    });
+
   }
 
   void _checkForUpdates() async {

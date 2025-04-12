@@ -30,3 +30,14 @@ Map<String,int> appColors = {
   "Agility Blue" : 0xFF0077D7,
   "Ultramarine Blue" : 0xFF357EC7,
 };
+
+String privacyPolicy = "Your Data is yours.\n\nI don't care about your data and how YOU use it.\n\nHow so you may ask? Because the app only make calls to two APIS (Anilist for Anime Info and my self deployed instance of Aniwatch_API for episodes and videos, nothing more than that) and on top of that everything else is on device \n \n Plus it's open source So you can confirm it yourself";
+
+List<String> termsOfService = [
+  "Distribution of Uanimurs is ! Prohibited",
+  "Use of Uanimurs is ! Prohibited",
+  "Uanimurs is ! Restricted",
+  "Uanimurs is ! Controlled",
+  "Uanimurs is for everyone",
+  "Someone PLEASE HIRE ME",
+];

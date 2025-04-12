@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:string_similarity/string_similarity.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../constants.dart';
 import 'models/ani_watch_model.dart';
+import 'models/github_model.dart';
 
 
 // List of words to ignore
@@ -37,7 +40,7 @@ Anime findBestAnimeMatch(String inputTitle, List<Anime> animeList) {
     }
   }
 
-  return bestMatch ?? Anime(id: "", name: "", img: '', episodes: SearchedAnimeEpisodes(eps: 0, sub: 0, dub: 0), duration: '', rated: false);
+  return bestMatch ?? Anime(aniwatchId: "", name: "", img: '', episodes: SearchedAnimeEpisodes(eps: 0, sub: 0, dub: 0), duration: '', rated: false);
 }
 
 // SHOW BOTTOM SHEETS
@@ -101,5 +104,177 @@ void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episod
         ),
       );
     },
+  );
+}
+
+// Show GitHub repository data
+
+void showRepositoryData(BuildContext context, Future<RepositoryModel> fetchRepo){
+  showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          title: Text("About Uanimurs"),
+          content: FutureBuilder(
+              future: fetchRepo,
+              builder: (context,snapshot){
+                if (snapshot.hasData){
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: Text("Repo name"),
+                        trailing: Text(snapshot.data!.name),
+                      ),
+                      ListTile(
+                        title: Text("Repo description"),
+                        subtitle: Text(snapshot.data!.description),
+                      ),
+                      ListTile(
+                        title: Text("Dev Language"),
+                        trailing: Text(snapshot.data!.language),
+                      ),
+                      ListTile(
+                        title: Text("Framework"),
+                        trailing: Text("Flutter"),
+                      ),
+                      ListTile(
+                        title: Text("Stars"),
+                        trailing: Text(snapshot.data!.stargazersCount.toString()),
+                      ),
+                      MaterialButton(
+                        color: Colors.blue,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        onPressed: () async{
+                          if (!await launchUrl(Uri.parse("https://github.com/KraizyVic/Uanimurs"))) {
+                            throw Exception('Could not launch https://ko-fi.com/kraizyvic');
+                          }
+                        },
+                        child: Text("Star this project"),
+                      )
+                    ],
+                  );
+                }else if (snapshot.hasError){
+                  return Center(heightFactor: 2,child: Text("Error Loading repository data"));
+                }else{
+                  return Center(heightFactor: 2, child: CircularProgressIndicator());
+                }
+              }
+          ),
+        );
+      }
+  );
+}
+
+// Show GitHub developer data
+
+void showDeveloperData(BuildContext context, Future<DeveloperModel> fetchDeveloper){
+  showDialog(
+    context: context,
+    builder: (context){
+      return AlertDialog(
+          title: Text("About Developer"),
+          content: FutureBuilder(
+              future: fetchDeveloper,
+              builder: (context,snapshot){
+                if (snapshot.hasData){
+                  return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: NetworkImage(snapshot.data!.avatarUrl),
+                        ),
+                        SizedBox(height: 5,),
+                        Text(snapshot.data!.name,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary)),
+                        SizedBox(height: 5,),
+                        Text(snapshot.data!.bio),
+                        ListTile(
+                          title: Text("Followers"),
+                          trailing: Text(snapshot.data!.followers.toString()),
+                        ),
+                        ListTile(
+                          title: Text("Public Repos"),
+                          trailing: Text(snapshot.data!.publicRepos.toString()),
+                        ),
+                        ListTile(
+                          title: Text("Job Status"),
+                          trailing: Text(snapshot.data!.hireable ? "Available" : "Not Available" , style: TextStyle(color: snapshot.data!.hireable ? Colors.green : Colors.red),),
+                        ),
+                        MaterialButton(
+                          color: Colors.blue,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          onPressed: () async{
+                            if (!await launchUrl(Uri.parse("https://ko-fi.com/kraizyvic"))) {
+                              throw Exception('Could not launch https://ko-fi.com/kraizyvic');
+                            }
+                          },
+                          child: Text("Support me on Ko-fi"),
+                        ),
+                      ]
+                  );
+                }else if (snapshot.hasError){
+                  return Center(heightFactor: 2,child: Text("Error Loading developer data"));
+                }else{
+                  return Center(heightFactor: 2, child: CircularProgressIndicator());
+                }
+              }
+          )
+      );
+    },
+  );
+}
+
+// Show Terms of Service
+
+void showTermsOfService(BuildContext context){
+  showModalBottomSheet(
+      context: context,
+      builder: (context){
+        return Container(
+          height: 400,
+          padding: EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Text("Terms of Service",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: termsOfService.length,
+                    itemBuilder: (context,index){
+                      return ListTile(
+                        leading: Text("${index+1}.",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                        title: Text(termsOfService[index]),
+                      );
+                    }
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+  );
+}
+
+// Show Privacy Policy
+
+void showPrivacyPolicy(BuildContext context){
+  showModalBottomSheet(
+      context: context,
+      builder: (context){
+        return Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Privacy Policy",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),),
+                SizedBox(height: 10,),
+                Text(privacyPolicy),
+                SizedBox(height: 20,),
+              ]
+          ),
+        );
+      }
   );
 }

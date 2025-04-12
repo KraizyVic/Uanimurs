@@ -1,4 +1,6 @@
-import 'dart:convert';
+import 'package:isar/isar.dart';
+
+part 'ani_watch_model.g.dart';
 
 // SEARCHED ANIME
 
@@ -29,8 +31,10 @@ class SearchedAnimes {
   );
 }
 
+@Collection()
 class Anime {
-  final String id;
+  Id id = Isar.autoIncrement;
+  final String aniwatchId;
   final String name;
   final String img;
   final SearchedAnimeEpisodes episodes;
@@ -38,7 +42,7 @@ class Anime {
   final bool rated;
 
   Anime({
-    required this.id,
+    required this.aniwatchId,
     required this.name,
     required this.img,
     required this.episodes,
@@ -47,7 +51,7 @@ class Anime {
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) => Anime(
-    id: json["id"] ?? "none",
+    aniwatchId: json["id"] ?? "none",
     name: json["name"] ?? "none",
     img: json["img"] ?? "none",
     episodes: SearchedAnimeEpisodes.fromJson(json["episodes"]),
@@ -56,15 +60,16 @@ class Anime {
   );
 }
 
+@Embedded()
 class SearchedAnimeEpisodes {
-  final int eps;
-  final int sub;
-  final int dub;
+  final int? eps;
+  final int? sub;
+  final int? dub;
 
   SearchedAnimeEpisodes({
-    required this.eps,
-    required this.sub,
-    required this.dub,
+    this.eps,
+    this.sub,
+    this.dub,
   });
 
   factory SearchedAnimeEpisodes.fromJson(Map<String, dynamic> json) => SearchedAnimeEpisodes(
@@ -73,6 +78,7 @@ class SearchedAnimeEpisodes {
     dub: json["dub"] ?? 0,
   );
 }
+
 
 class MostPopularAnime {
   final String id;

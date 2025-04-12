@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
+import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/settings_model.dart';
+import 'package:uanimurs/Logic/models/watch_history.dart';
 
 import 'anime_model.dart';
 
@@ -22,7 +24,7 @@ class AccountModel {
 
   final SettingsModel settings; // Embedded
   final IsarLinks<AnimeModel> watchList = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
-  final IsarLinks<AnimeModel> watchHistory = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
+  final IsarLinks<WatchHistory> watchHistory = IsarLinks<WatchHistory>(); // List of WatchHistoryModel
   final IsarLinks<AnimeModel> favorites = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
   final List<String> searchHistory = []; // List of search terms
 
@@ -48,22 +50,3 @@ class AccountModel {
     );
   }
 }
-/*
-  extension AccountModelCopyWith on AccountModel {
-  AccountModel copyWith({
-    String? username,
-    String? accountType,
-    String? pfp,
-    SettingsModel? settings,
-    List<AnimeModel>? watchList,
-  }) {
-    return AccountModel(
-      username: username ?? this.username,
-      accountType: accountType ?? this.accountType,
-      pfp: pfp ?? this.pfp,
-      settings: settings ?? this.settings,
-    )..watchList.addAll(watchList ?? this.watchList);
-  }
-
-}
-*/

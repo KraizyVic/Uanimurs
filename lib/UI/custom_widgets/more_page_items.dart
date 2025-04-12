@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/more_page_pages/about_page.dart';
 import '../pages/more_page_pages/appearance_page.dart';
@@ -54,8 +55,34 @@ class FunctionalSettings extends StatelessWidget {
             subtitle: Text("About Uanimurs"),
             onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()))
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10,),
+            child: ListTile(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              tileColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+              leading: Icon(Icons.coffee),
+              title: Text("Buy me Ko-Fi"),
+              subtitle: Text("Support this project on Ko-fi"),
+              onTap: () async{
+                if (!await launchUrl(Uri.parse("https://ko-fi.com/kraizyvic"))) {
+                  showSnackBar(context, "Could not launch https://ko-fi.com/kraizyvic");
+                  throw Exception('Could not launch https://ko-fi.com/kraizyvic');
+
+                }
+              }
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+void showSnackBar(BuildContext context,String message){
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: Duration(seconds: 2),
+    )
+  );
 }
