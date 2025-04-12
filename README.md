@@ -20,6 +20,9 @@ Credits:
 
 ![Group 38](https://github.com/user-attachments/assets/a6d008b8-231a-458a-b96a-de42b6be06bf)
 
+## Disclaimer:
+
+The developer of this application does not have any affiliation with the content providers available, and this application hosts zero content.
 
 ## Getting Started
 
