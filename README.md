@@ -16,6 +16,11 @@ Credits:
 3. [FrostNova](https://github.com/frostnova721) for inspiration through [AnimeStream](https://github.com/frostnova721/animestream)
 4. [Aniwatch.to](https://github.com/frostnova721/animestream) - Anime data source - And for just existing in general
 
+## Screenshots:
+
+![Group 38](https://github.com/user-attachments/assets/a6d008b8-231a-458a-b96a-de42b6be06bf)
+
+
 ## Getting Started
 
 1. Run flutter pub get
