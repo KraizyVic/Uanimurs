@@ -18,7 +18,18 @@ Credits:
 
 ## Screenshots:
 
-![Group 38](https://github.com/user-attachments/assets/a6d008b8-231a-458a-b96a-de42b6be06bf)
+<table>
+  <tr>
+        <td><img src="https://github.com/user-attachments/assets/b36119db-74a8-41a4-8b38-b920963de6c3" width="200" alt="Who's watching page"/></td>
+        <td><img src="https://github.com/user-attachments/assets/7f09d135-1c6e-4218-a8ef-cbaf1f761a8c" width="200" alt="Home Screen"/></td>
+        <td><img src="https://github.com/user-attachments/assets/6d56c234-7e9b-4e6c-bdde-8fba79c6376f" width="200" alt="Search Screen"/></td>
+        <td><img src="https://github.com/user-attachments/assets/9cd9603c-44a1-489a-b303-8490e86323c1" width="200" alt="Watch List Screen"/></td>
+  </tr>
+  <tr>
+        <td><img src="https://github.com/user-attachments/assets/714e1590-f3a7-4efd-94ab-88bfd987915d" width="200" alt="More Page"/></td>
+        <td><img src="https://github.com/user-attachments/assets/6293d43c-2bb3-43f1-8c06-b415e3b05d49" width="200" alt="Account"/></td>
+  </tr>
+</table>
 
 ## Disclaimer:
 
