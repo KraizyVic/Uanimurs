@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../Logic/models/ani_watch_model.dart';
 import '../../Logic/models/anime_model.dart';
+import '../../Logic/services/anilist_service.dart';
 import 'anime_details_page_items.dart';
 import '../pages/home_page.dart';
 import '../pages/more_page.dart';
@@ -13,7 +14,7 @@ Widget detailsPages(int pageIndex, AnimeModel animeModel, Anime bestMatch,) {
     case 0:
       return OverviewContent(animeModel: animeModel);
     case 1:
-      return EpisodesPage(animeId: bestMatch.aniwatchId, searchedAnimeName: bestMatch.name);
+      return EpisodesPage(animeId: bestMatch.aniwatchId ?? "", searchedAnimeName: bestMatch.name ?? "",anime: bestMatch, animeModel: animeModel,);
     case 2:
       return CastPage(animeModel: animeModel);
     case 3:

@@ -161,6 +161,7 @@ AccountModel _accountModelDeserialize(
   object.created = reader.readString(offsets[1]);
   object.id = id;
   object.isActive = reader.readBool(offsets[2]);
+  object.searchHistory = reader.readStringList(offsets[4]) ?? [];
   return object;
 }
 

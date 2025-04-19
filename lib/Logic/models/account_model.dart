@@ -26,7 +26,7 @@ class AccountModel {
   final IsarLinks<AnimeModel> watchList = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
   final IsarLinks<WatchHistory> watchHistory = IsarLinks<WatchHistory>(); // List of WatchHistoryModel
   final IsarLinks<AnimeModel> favorites = IsarLinks<AnimeModel>(); // Relationship to AnimeModel List
-  final List<String> searchHistory = []; // List of search terms
+  List<String> searchHistory = []; // List of search terms
 
   AccountModel({
     required this.username,
@@ -41,12 +41,18 @@ class AccountModel {
     String? accountType,
     String? pfp,
     SettingsModel? settings,
+    List<String>? searchHistory,
   }) {
-    return AccountModel(
+    final newModel = AccountModel(
       username: username ?? this.username,
       accountType: accountType ?? this.accountType,
       pfp: pfp ?? this.pfp,
       settings: settings ?? this.settings,
     );
+
+    newModel.searchHistory = searchHistory ?? this.searchHistory;
+
+    return newModel;
   }
+
 }

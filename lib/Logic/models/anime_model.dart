@@ -48,6 +48,35 @@ class AnimeModel {
     required this.description,
     required this.characters,
   });
+
+  AnimeModel copyWith({
+    int? alId,
+    required Id id,
+  }){
+    return AnimeModel(
+      alId: alId ?? this.alId,
+      malId: malId ?? this.malId,
+      startDate: startDate,
+      endDate: endDate,
+      season: season,
+      type: type,
+      format: format,
+      status: status,
+      episodes: episodes,
+      duration: duration,
+      isAdult: isAdult,
+      meanScore: meanScore,
+      popularity: popularity,
+      genres: genres,
+      trailer: trailer,
+      title: title,
+      coverImage: coverImage,
+      bannerImage: bannerImage,
+      description: description,
+      characters: characters,
+    );
+  }
+
   factory AnimeModel.fromJson(Map<String, dynamic> json) => AnimeModel(
     alId: json["id"] ?? 0,
     malId: json["idMal"] ?? 0,

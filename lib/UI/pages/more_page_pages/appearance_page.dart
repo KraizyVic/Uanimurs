@@ -106,6 +106,9 @@ class _AppearancePageState extends State<AppearancePage> {
                       }
                     ),
                   ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: 50,),
+                  )
                 ]
               );
             }

@@ -1,14 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uanimurs/Logic/bloc/account_cubit.dart';
+import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/custom_widgets/tiles.dart';
 import '../../Logic/services/anilist_service.dart';
 import 'anime_details_page.dart';
 
 class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
   @override
-  _SearchPageState createState() => _SearchPageState();
+  State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
@@ -36,63 +41,92 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Search',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
-        forceMaterialTransparency: true,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Search for anime...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: _searchAnime,
+    return BlocBuilder<AccountCubit,List<AccountModel>>(
+      builder: (context,state) {
+        AccountModel activeAccount = context.read<AccountCubit>().activeAccount!;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Search',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
+            forceMaterialTransparency: true,
+          ),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Search for anime...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _searchTerm = '';
+                          _searchResults = Future.value([]);
+                        });
+                      }
+                    ),
+                  ),
+                  onChanged: _onSearchChanged,
+                  onSubmitted: (value) async{
+                    _searchAnime();
+                    await context.read<AccountCubit>().addToSearchHistory(value);
+                  },
                 ),
               ),
-              onChanged: _onSearchChanged,
-              onSubmitted: (value) {
-                _searchAnime();
-              },
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<AnimeModel>>(
-              future: _searchResults,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+              Expanded(
+                child: FutureBuilder<List<AnimeModel>>(
+                  future: _searchResults,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('Enter something to search'));
-                }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty ) {
+                      return context.read<AccountCubit>().activeAccount!.searchHistory.isEmpty ? Center(
+                          child: Text('Enter something to search')
+                      ) : ListView.builder(
+                        itemCount: activeAccount.searchHistory.length,
+                        itemBuilder: (context,index){
+                          return ListTile(
+                            title: Text(activeAccount.searchHistory[index]),
+                            trailing: IconButton(
+                              onPressed: ()=>context.read<AccountCubit>().removeSearchTerm(activeAccount.searchHistory[index]),
+                              icon: Icon(Icons.remove)
+                            ),
+                          );
+                        }
+                      );
+                    }
 
-                final results = snapshot.data!;
-
-                return ListView.builder(
-                  itemCount: results.length,
-                  itemBuilder: (context, index) {
-                    final anime = results[index];
-                    return AnimeListTile(animeModel: anime, onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: anime))));
+                    final results = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: results.length,
+                      itemBuilder: (context, index) {
+                        final anime = results[index];
+                        return AnimeListTile(
+                          animeModel: anime,
+                          onPressed: () async{
+                            await context.read<AccountCubit>().addToSearchHistory(anime.title.english == "null" ? anime.title.romaji ?? "" : anime.title.english ?? "");
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: anime)));
+                          }
+                        );
+                      },
+                    );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 }

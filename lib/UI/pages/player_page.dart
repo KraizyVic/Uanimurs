@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
+import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/custom_widgets/player_page_items.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../Logic/bloc/account_cubit.dart';
+import '../../Logic/models/watch_history.dart';
 import '../../Logic/services/aniwatch_services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -15,13 +19,21 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class PlayerPage extends StatefulWidget {
   final StreamingLink streamingLink;
   final int episodeNumber;
-  final Episodes episodes;
+  final Episodes? episodes;
+  final AnimeModel animeModel;
+  final Anime anime;
+  final WatchHistory? watchHistory;
+  final Future<Episodes>? episodesFuture;
 
   const PlayerPage({
     super.key,
     required this.episodeNumber,
     required this.streamingLink,
-    required this.episodes
+    required this.episodes,
+    required this.animeModel,
+    required this.anime,
+    this.watchHistory,
+    this.episodesFuture
   });
 
   @override
@@ -43,6 +55,8 @@ class _PlayerPageState extends State<PlayerPage> {
   int elapsedTime = 0;
   bool hasBeenPaused = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late Future <Episodes> episodes ;
 
 
 
@@ -66,15 +80,16 @@ class _PlayerPageState extends State<PlayerPage> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    isSelectedSubtitleIndex = widget.streamingLink.tracks.indexWhere((t) => t.trackDefault);
-    _qualityLinks = AniWatchService().getQualityLinks(widget.streamingLink.sources[0].url);
-    _initializeVideoPlayer(widget.streamingLink.sources[0].url);
+
+    isSelectedSubtitleIndex = widget.streamingLink.tracks!.indexWhere((t) => t.trackDefault ?? false);
+    _qualityLinks = AniWatchService().getQualityLinks(widget.watchHistory == null ? widget.streamingLink.sources?.first.url ?? "" : widget.watchHistory!.streamingLink?.sources?.first.url ?? "");
+    _initializeVideoPlayer(widget.watchHistory == null ? widget.streamingLink.sources?.first.url ?? "" : widget.watchHistory!.streamingLink?.sources?.first.url ?? "",widget.watchHistory == null ? 0 : widget.watchHistory!.watchTime!);
     _showControlsAndStartTimer();
   }
 
 
 
-  Future<void> _initializeVideoPlayer(String videoUrl) async {
+  Future<void> _initializeVideoPlayer(String videoUrl,int elapsedTime) async {
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(videoUrl),
       httpHeaders: {
@@ -82,13 +97,19 @@ class _PlayerPageState extends State<PlayerPage> {
         "origin": "https://aniwatchtv.to/",
         "referer": "https://aniwatchtv.to/",
       },
-    )..initialize().then((_) {
+    )..initialize().then((_) async{
         if (mounted) {
           setState(() {});
         }
+        final position = widget.watchHistory?.watchTime ?? elapsedTime;
+        print("\nElapsedTime: $position\n");
+
+        await _controller.seekTo(Duration(milliseconds: position));
+        await _controller.play();
       });
-    _controller.play();
-    _fetchSubtitles(widget.streamingLink.tracks.firstWhere((t) => t.trackDefault, orElse: () => widget.streamingLink.tracks.first).file);
+    print("\nElapsedTime: $elapsedTime\n");
+    await _controller.play();
+    _fetchSubtitles(widget.streamingLink.tracks!.firstWhere((t) => t.trackDefault ?? false, orElse: () => widget.streamingLink.tracks!.first).file ?? "");
     // Listen for video playback state changes
     _controller.addListener(() {
       if (_controller.value.isPlaying && !_isWakeLockEnabled) {
@@ -232,225 +253,295 @@ class _PlayerPageState extends State<PlayerPage> {
     _controller.dispose();
     _subtitleTimer?.cancel();
     _hideTimer?.cancel();
+
     super.dispose();
   }
   String drawerTitle = "Video";
 
+
+  Future<bool> _onWillPop() async {
+    await context.read<AccountCubit>().addOrUpdateWatchHistory(
+      WatchHistory(
+        anilistId: widget.animeModel.alId,
+        anime: widget.anime,
+        name: widget.anime.name,
+        image: widget.anime.img,
+        watchTime: _controller.value.position.inMilliseconds,
+        totalTime: _controller.value.duration.inMilliseconds,
+        lastWatched: DateTime.now(),
+        streamingLink: widget.streamingLink,
+        watchedEpisodes: [],
+        watchingEpisode: widget.episodeNumber,
+        totalEpisodes: widget.episodes?.totalEpisodes ?? 0 ,
+      ),
+    );
+    return true; // let it pop
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: Drawer(
-        shape: RoundedRectangleBorder(),
-        backgroundColor: Colors.black87,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                drawerTitle,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              if (drawerTitle == "Audio") ...[
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: Drawer(
+          shape: RoundedRectangleBorder(),
+          backgroundColor: Colors.black87,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  drawerTitle,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                if (drawerTitle == "Audio") ...[
+                  Expanded(
+                    child: Center(
+                      child: Text("Coming SOON"),
+                    ),
+                  )
+                ] else if (drawerTitle == "Video") ...[
+                  Expanded(
+                    child: FutureBuilder(
+                      future: _qualityLinks,
+                      builder: (context, snapshot){
+                        if(snapshot.hasData){
+                          return ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context,index){
+                              return ListTile(
+                                  onTap: () async {
+                                    // Save elapsed time
+                                    elapsedTime = _controller.value.position.inMilliseconds;
+                                    // Dispose the old controller BEFORE setState
+                                    await _controller.dispose();
+                                    // Create a new video controller
+                                    final newController = VideoPlayerController
+                                        .networkUrl(
+                                        Uri.parse(snapshot.data![index].url)
+                                    );
+                                    // Initialize the new controller
+                                    await newController.initialize();
+                                    // Seek to the saved position
+                                    await newController.seekTo(
+                                        Duration(milliseconds: elapsedTime));
+                                    // Set the new controller in state
+                                    if (mounted) {
+                                      setState(() {
+                                        _controller = newController;
+                                        selectedQualityIndex = index;
+                                        _controller.play();
+                                      });
+                                    }
+                                  },
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  //tileColor: index == selectedQualityIndex ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
+                                  title: Text(snapshot.data![index].quality,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+                                  subtitle: Text(snapshot.data![index].url.split("/").last.split(".")[0]),
+                                  trailing: index == selectedQualityIndex ? Icon(Icons.check,color: Theme.of(context).colorScheme.primary,) : null,
+                              );
+                            }
+                          );
+                        }else if(snapshot.hasError){
+                          return Center(child: Text("Error"));
+                        }else{
+                          return Center(child: CircularProgressIndicator());
+                        }
+                      }
+                    )
+                  )
+                ] else if (drawerTitle == "Subtitles") ...[
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: widget.streamingLink.tracks?.length ?? 0,
+                      itemBuilder: (context,index){
+                        return ListTile(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          tileColor: index == isSelectedSubtitleIndex ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
+                          onTap: (){
+                            setState(() {
+                              //widget.streamingLink.tracks[index].trackDefault = true;
+                              isSelectedSubtitleIndex = index;
+                              elapsedTime = _controller.value.position.inMilliseconds;
+                              _fetchSubtitles(widget.streamingLink.tracks?[index].file ?? "");
+                            });
+                          },
+                          title: Text(widget.streamingLink.tracks?[index].label ?? "",style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+                          subtitle: Text(widget.streamingLink.tracks?[index].kind ?? ""),
+                          trailing: isSelectedSubtitleIndex == index ? Icon(Icons.check,color: Theme.of(context).colorScheme.primary,) : null,
+                        );
+                      }
+                    )
+                  )
+                ],
+              ],
+            ),
+          ),
+        ),
+        endDrawer: Drawer(
+          backgroundColor: Colors.black87,
+          shape: RoundedRectangleBorder(),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Episodes',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
                 Expanded(
-                  child: Center(
-                    child: Text("Coming SOON"),
-                  ),
-                )
-              ] else if (drawerTitle == "Video") ...[
-                Expanded(
-                  child: FutureBuilder(
-                    future: _qualityLinks,
-                    builder: (context, snapshot){
+                  child: widget.episodes == null ? FutureBuilder(
+                    future: widget.episodesFuture,
+                    builder: (context,snapshot) {
                       if(snapshot.hasData){
                         return ListView.builder(
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context,index){
-                            return ListTile(
-                                onTap: () async {
-                                  // Save elapsed time
-                                  elapsedTime = _controller.value.position.inMilliseconds;
-                                  // Dispose the old controller BEFORE setState
-                                  await _controller.dispose();
-                                  // Create a new video controller
-                                  final newController = VideoPlayerController
-                                      .networkUrl(
-                                      Uri.parse(snapshot.data![index].url)
-                                  );
-                                  // Initialize the new controller
-                                  await newController.initialize();
-                                  // Seek to the saved position
-                                  await newController.seekTo(
-                                      Duration(milliseconds: elapsedTime));
-                                  // Set the new controller in state
-                                  if (mounted) {
-                                    setState(() {
-                                      _controller = newController;
-                                      selectedQualityIndex = index;
-                                      _controller.play();
-                                    });
-                                  }
-                                },
+                            itemCount: snapshot.data!.episodes.length,
+                            itemBuilder: (context,index){
+                              return ListTile(
+                                onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodes[index].episodeId, serverName: "megacloud", type: "sub", episodeNumber: index, episodes: snapshot.data!,anime: widget.anime,animeModel: widget.animeModel,))),
+                                //autofocus: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                //tileColor: index == selectedQualityIndex ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
-                                title: Text(snapshot.data![index].quality,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
-                                subtitle: Text(snapshot.data![index].url.split("/").last.split(".")[0]),
-                                trailing: index == selectedQualityIndex ? Icon(Icons.check,color: Theme.of(context).colorScheme.primary,) : null,
-                            );
-                          }
+                                tileColor: snapshot.data!.episodes[index].episodeNo-1 == widget.episodeNumber ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
+                                title: Text("Episode ${snapshot.data!.episodes[index].episodeNo}",style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+                                subtitle: Text(snapshot.data!.episodes[index].name),
+                                trailing: snapshot.data!.episodes[index].episodeNo-1 == widget.episodeNumber ? Icon(Icons.play_arrow,color: Theme.of(context).colorScheme.primary,) : null,
+                              );
+                            }
                         );
                       }else if(snapshot.hasError){
-                        return Center(child: Text("Error"));
+                        return Center(
+                          child: Text("Error loading episodes"),
+                        );
                       }else{
-                        return Center(child: CircularProgressIndicator());
+                        return Center( child: CircularProgressIndicator(),);
                       }
                     }
-                  )
-                )
-              ] else if (drawerTitle == "Subtitles") ...[
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: widget.streamingLink.tracks.length,
-                    itemBuilder: (context,index){
-                      return ListTile(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        tileColor: index == isSelectedSubtitleIndex ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
-                        onTap: (){
-                          setState(() {
-                            //widget.streamingLink.tracks[index].trackDefault = true;
-                            isSelectedSubtitleIndex = index;
-                            elapsedTime = _controller.value.position.inMilliseconds;
-                            _fetchSubtitles(widget.streamingLink.tracks[index].file);
-                          });
-                        },
-                        title: Text(widget.streamingLink.tracks[index].label,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
-                        subtitle: Text(widget.streamingLink.tracks[index].kind),
-                        trailing: isSelectedSubtitleIndex == index ? Icon(Icons.check,color: Theme.of(context).colorScheme.primary,) : null,
-                      );
-                    }
+                  ) :  ListView.builder(
+                      itemCount: widget.episodes!.episodes.length,
+                      itemBuilder: (context,index){
+                        return ListTile(
+                          onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes!.episodes[index].episodeId, serverName: "megacloud", type: "sub", episodeNumber: index, episodes: widget.episodes! ,anime: widget.anime,animeModel: widget.animeModel,))),
+                          //autofocus: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          tileColor: widget.episodes!.episodes[index].episodeNo-1 == widget.episodeNumber ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
+                          title: Text("Episode ${widget.episodes!.episodes[index].episodeNo}",style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+                          subtitle: Text(widget.episodes!.episodes[index].name),
+                          trailing: widget.episodes!.episodes[index].episodeNo-1 == widget.episodeNumber ? Icon(Icons.play_arrow,color: Theme.of(context).colorScheme.primary,) : null,
+                        );
+                      }
                   )
                 )
               ],
-            ],
+            )
           ),
         ),
-      ),
-      endDrawer: Drawer(
-        backgroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        body: Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+          ),
+          child: Stack(
             children: [
-              Text(
-                'Episodes',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: widget.episodes.episodes.length,
-                  itemBuilder: (context,index){
-                    return ListTile(
-                      onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes.episodes[index].episodeId, serverName: "megacloud", type: "sub", episodeNumber: index, episodes: widget.episodes,))),
-                      //autofocus: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      tileColor: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
-                      title: Text("Episode ${widget.episodes.episodes[index].episodeNo}",style: TextStyle(color: Theme.of(context).colorScheme.primary),),
-                      subtitle: Text(widget.episodes.episodes[index].name),
-                      trailing: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber ? Icon(Icons.play_arrow,color: Theme.of(context).colorScheme.primary,) : null,
-                    );
-                  }
-                )
-              )
-            ],
-          )
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Colors.black,
-        ),
-        child: Stack(
-          children: [
-            _controller.value.isInitialized ? Center(child: AspectRatio(aspectRatio: _controller.value.aspectRatio,child: VideoPlayer(_controller))) : Center(child: CircularProgressIndicator()),
-            ! _controller.value.isPlaying && _controller.value.isBuffering ? Center(
-              child: CircularProgressIndicator(),
-            ) : Container(),
-            // Subtitle display
-            Center(
-              child: Column(
-                children: [
-                  Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      color: Colors.black54,
-                      child: Text(
-                        currentSubtitle,
-                        style: TextStyle(color: Colors.white,fontSize: 18),
-                        textAlign: TextAlign.center,
+              _controller.value.isInitialized ? Center(child: AspectRatio(aspectRatio: _controller.value.aspectRatio,child: VideoPlayer(_controller))) : Center(child: CircularProgressIndicator()),
+              ! _controller.value.isPlaying && _controller.value.isBuffering ? Center(
+                child: CircularProgressIndicator(),
+              ) : Container(),
+              // Subtitle display
+              Center(
+                child: Column(
+                  children: [
+                    Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        color: Colors.black54,
+                        child: Text(
+                          currentSubtitle,
+                          style: TextStyle(color: Colors.white,fontSize: 18),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: (){
-                _showControlsAndStartTimer();
-              },
-            ),
-            _showControls ? PlayerControls(
-              isFullScreen: true,
-              episodes: widget.episodes,
-              episodeIndex: widget.episodeNumber,
-              controller: _controller,
-              scaffoldKey: _scaffoldKey,
-              resetControlTimer: (){
-                _showControlsAndStartTimer();
-              },
-              toggleOffControls: (){
-                setState(() {
-                  _showControls = false;
-                });
-              },
-              onAudioAtap: () {
-                _controller.pause();
-                setState(() {
-                  drawerTitle = "Audio";
-                });
-                print(drawerTitle);
-                _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
-              },
-
-              onVideoTap: () {
-                _controller.pause();
-                setState(() {
-                  drawerTitle = "Video";
-                });
-                _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
-              },
-
-              onSubtitleTap: () {
-                //_controller.pause();
-                setState(() {
-                  drawerTitle = "Subtitles";
-                });
-                _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
-              },
-
-              fullScreen: IconButton(
-                icon: Icon(
-                  _isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                  color: Colors.white,
+                  ],
                 ),
-                onPressed: (){},
               ),
-            ): Container(),
-          ],
+              GestureDetector(
+                onTap: (){
+                  _showControlsAndStartTimer();
+                },
+              ),
+              _showControls ? PlayerControls(
+                isFullScreen: true,
+                episodes: widget.episodes == null ? Episodes(totalEpisodes: 0, episodes: []) : widget.episodes!,
+                episodeIndex: widget.episodeNumber,
+                controller: _controller,
+                scaffoldKey: _scaffoldKey,
+                resetControlTimer: (){
+                  _showControlsAndStartTimer();
+                },
+                toggleOffControls: (){
+                  setState(() {
+                    _showControls = false;
+                  });
+                },
+                onAudioAtap: () {
+                  _controller.pause();
+                  setState(() {
+                    drawerTitle = "Audio";
+                  });
+                  print(drawerTitle);
+                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                },
+
+                onVideoTap: () {
+                  _controller.pause();
+                  setState(() {
+                    drawerTitle = "Video";
+                  });
+                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                },
+
+                onSubtitleTap: () {
+                  //_controller.pause();
+                  setState(() {
+                    drawerTitle = "Subtitles";
+                  });
+                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                },
+
+                onExit:()async{
+                  await context.read<AccountCubit>().addOrUpdateWatchHistory(
+                    WatchHistory(
+                      anilistId: widget.animeModel.alId,
+                      anime: widget.anime,
+                      name: widget.anime.name,
+                      image: widget.anime.img,
+                      watchTime: _controller.value.position.inMilliseconds,
+                      totalTime: _controller.value.duration.inMilliseconds,
+                      lastWatched : DateTime.now(),watchedEpisodes: [],
+                      watchingEpisode: widget.episodeNumber+1,
+                      streamingLink: widget.streamingLink,
+                      totalEpisodes: widget.episodes?.totalEpisodes ?? 0,
+                    )
+                  );
+                  print(widget.episodeNumber);
+                  Navigator.pop(context);
+                },
+
+                fullScreen: IconButton(
+                  icon: Icon(
+                    _isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                    color: Colors.white,
+                  ),
+                  onPressed: (){},
+                ),
+              ): Container(),
+            ],
+          ),
         ),
       ),
     );

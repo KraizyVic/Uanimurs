@@ -115,7 +115,7 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                   TextButton(
                     onPressed: (){
-                      UpdateService.checkForUpdates(context);
+                      UpdateService.checkForUpdates(context,true);
                     },
                     child: Text("Check for updates")
                   ),

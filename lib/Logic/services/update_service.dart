@@ -15,7 +15,7 @@ class UpdateService {
   FlutterLocalNotificationsPlugin();
   static const MethodChannel _platform = MethodChannel('app.updater/channel');
 
-  static Future<void> checkForUpdates(BuildContext context) async {
+  static Future<void> checkForUpdates(BuildContext context,bool isManualCheck) async {
     final info = await PackageInfo.fromPlatform();
     final currentVersion = info.version;
 
@@ -33,7 +33,7 @@ class UpdateService {
       if (isNew) {
         _showUpdateSheet(context, latestVersion, changelog, apkUrl);
       }else{
-        showDialog(
+        isManualCheck ? showDialog(
           context: context,
           builder: (context){
             return AlertDialog(
@@ -47,7 +47,7 @@ class UpdateService {
               ),
             );
           }
-        );
+        ) : null;
       }
     } else {
       print('Failed to fetch latest release');
@@ -233,8 +233,8 @@ class UpdateService {
 
 class VersionHelper {
   static bool isNewVersionAvailable(String currentVersion, String latestVersion) {
-    final current = currentVersion.replaceAll("v", "").trim();
-    final latest = latestVersion.replaceAll("v", "").trim();
-    return current != latest;
+    final current = currentVersion.replaceAll("v", "").replaceAll(".", "").trim();
+    final latest = latestVersion.replaceAll("v", "").replaceAll(".", "").trim();
+    return int.parse(latest) > int.parse(current);
   }
 }

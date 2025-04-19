@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:string_similarity/string_similarity.dart';
+import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants.dart';
+import 'bloc/account_cubit.dart';
 import 'models/ani_watch_model.dart';
 import 'models/github_model.dart';
+import 'models/watch_history.dart';
 
 
 // List of words to ignore
@@ -30,7 +34,7 @@ Anime findBestAnimeMatch(String inputTitle, List<Anime> animeList) {
   double highestScore = 0;
 
   for (Anime anime in animeList) {
-    String cleanedAnimeName = cleanTitle(anime.name);
+    String cleanedAnimeName = cleanTitle(anime.name ?? "");
     double score = StringSimilarity.compareTwoStrings(cleanedInputTitle, cleanedAnimeName);
     //double score = cleanedInputTitle.similarityTo(cleanedAnimeName); // Compare names
 
@@ -45,7 +49,7 @@ Anime findBestAnimeMatch(String inputTitle, List<Anime> animeList) {
 
 // SHOW BOTTOM SHEETS
 
-void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episodeNumber,Episodes episodes) {
+void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episodeNumber,Episodes episodes,Anime anime,AnimeModel animeModel) {
   showModalBottomSheet(
     context: context,
     //backgroundColor: Colors.blue[100],
@@ -76,11 +80,21 @@ void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episod
                             itemBuilder: (context,index) {
                               return ListTile(
                                 onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodeId, serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,type: "sub",episodeNumber: episodeNumber,episodes: episodes,)));
+                                  Navigator.pop(context);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodeId, serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,type: "sub",episodeNumber: episodeNumber,episodes: episodes,anime: anime,animeModel: animeModel,)));
                                   //Navigator.pop(bc);
                                 },
-                                title: Text(snapshot.data!.sub[index].serverName,style: TextStyle(color: Theme.of(context).colorScheme.primary),),
-                                subtitle: Text("Multi Quality"),
+                                title: Text(
+                                  snapshot.data!.sub[index].serverName,
+                                  style: TextStyle(color: Theme.of(context).colorScheme.primary.withAlpha(index != 0 ? 255 : 150)),
+                                ),
+                                subtitle: Text("Multi Quality",style: TextStyle(color: Theme.of(context).colorScheme.tertiary.withAlpha(index != 0 ? 255 : 150))),
+                                trailing: Text(
+                                  index != 0 ? "Active" : "Inactive",
+                                  style: TextStyle(
+                                    color: index != 0 ? Colors.green : Colors.red,
+                                  ),
+                                ),
                               );
                             }
                         );

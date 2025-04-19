@@ -31,23 +31,24 @@ class SearchedAnimes {
   );
 }
 
-@Collection()
+// At the moment this Collection is useless
+
+@Embedded()
 class Anime {
-  Id id = Isar.autoIncrement;
-  final String aniwatchId;
-  final String name;
-  final String img;
-  final SearchedAnimeEpisodes episodes;
-  final String duration;
-  final bool rated;
+  final String? aniwatchId;
+  final String? name;
+  final String? img;
+  final SearchedAnimeEpisodes? episodes;
+  final String? duration;
+  final bool? rated;
 
   Anime({
-    required this.aniwatchId,
-    required this.name,
-    required this.img,
-    required this.episodes,
-    required this.duration,
-    required this.rated,
+    this.aniwatchId,
+    this.name,
+    this.img,
+    this.episodes,
+    this.duration,
+    this.rated,
   });
 
   factory Anime.fromJson(Map<String, dynamic> json) => Anime(
@@ -185,22 +186,22 @@ class Dub {
 }
 
 // Streaming Links
-
+@Embedded()
 class StreamingLink {
-  final List<Track> tracks;
-  final Tro intro;
-  final Tro outro;
-  final List<Source> sources;
-  final int anilistId;
-  final int malId;
+  final List<Track>? tracks;
+  final Tro? intro;
+  final Tro? outro;
+  final List<Source>? sources;
+  final int? anilistId;
+  final int? malId;
 
   StreamingLink({
-    required this.tracks,
-    required this.intro,
-    required this.outro,
-    required this.sources,
-    required this.anilistId,
-    required this.malId,
+    this.tracks,
+    this.intro,
+    this.outro,
+    this.sources,
+    this.anilistId,
+    this.malId,
   });
 
   factory StreamingLink.fromJson(Map<String, dynamic> json) => StreamingLink(
@@ -213,13 +214,14 @@ class StreamingLink {
   );
 }
 
+@Embedded()
 class Tro {
-  final int start;
-  final int end;
+  final int? start;
+  final int? end;
 
   Tro({
-    required this.start,
-    required this.end,
+    this.start,
+    this.end,
   });
 
   factory Tro.fromJson(Map<String, dynamic> json) => Tro(
@@ -228,13 +230,14 @@ class Tro {
   );
 }
 
+@Embedded()
 class Source {
-  final String url;
-  final String type;
+  final String? url;
+  final String? type;
 
   Source({
-    required this.url,
-    required this.type,
+    this.url,
+    this.type,
   });
 
   factory Source.fromJson(Map<String, dynamic> json) => Source(
@@ -243,17 +246,18 @@ class Source {
   );
 }
 
+@Embedded()
 class Track {
-  final String file;
-  final String label;
-  final String kind;
-  final bool trackDefault;
+  final String? file;
+  final String? label;
+  final String? kind;
+  final bool? trackDefault;
 
   Track({
-    required this.file,
-    required this.label,
-    required this.kind,
-    required this.trackDefault,
+    this.file,
+    this.label,
+    this.kind,
+    this.trackDefault,
   });
 
   factory Track.fromJson(Map<String, dynamic> json) => Track(

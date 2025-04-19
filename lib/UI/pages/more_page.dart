@@ -16,8 +16,10 @@ class MorePage extends StatelessWidget {
       builder: (context,state) {
         return Scaffold(
           appBar: AppBar(
-            //title: Text("More"),
-            //forceMaterialTransparency: true,
+            /*actions: [
+              IconButton(onPressed: (){}, icon: Icon(Icons.notifications_outlined,)),
+              IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
+            ],*/
           ),
           body: Column(
             children: [

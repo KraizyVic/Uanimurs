@@ -1,10 +1,13 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/UI/custom_widgets/anime_details_page_items.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../Logic/bloc/account_cubit.dart';
 
 class PlayerControls extends StatefulWidget {
   final Widget fullScreen;
@@ -16,6 +19,7 @@ class PlayerControls extends StatefulWidget {
   final VoidCallback onAudioAtap;
   final VoidCallback onVideoTap;
   final VoidCallback onSubtitleTap;
+  final VoidCallback onExit;
   final VideoPlayerController controller;
   final GlobalKey<ScaffoldState> scaffoldKey;
   const PlayerControls({
@@ -28,6 +32,7 @@ class PlayerControls extends StatefulWidget {
     required this.onAudioAtap,
     required this.onVideoTap,
     required this.onSubtitleTap,
+    required this.onExit,
     required this.episodes,
     required this.episodeIndex,
     required this.scaffoldKey
@@ -67,7 +72,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                 child: Row(
                   children: [
                     MaterialButton(
-                      onPressed: ()=>Navigator.pop(context),
+                      onPressed: widget.onExit,
                       padding: EdgeInsets.symmetric(horizontal: 5,vertical: 5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: Row(
@@ -112,7 +117,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                     onPressed: (){
                       widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds-10));
                     },
-                    icon: Icon(Icons.skip_previous,size: 40,)
+                    icon: Icon(Icons.replay_10,size: 50,)
                   ):SizedBox(),
                    IconButton(
                     onPressed: (){
@@ -127,7 +132,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                   widget.episodes.episodes.length > 1 ? IconButton(
                     onPressed: (){
                       widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds+10));
-                    }, icon: Icon(Icons.skip_next,size: 40)
+                    }, icon: Icon(Icons.forward_10,size: 50)
                   ):SizedBox(),
                 ],
               ),

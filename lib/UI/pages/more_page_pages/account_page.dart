@@ -36,7 +36,8 @@ class _AccountPageState extends State<AccountPage> {
                       Text("Add Account")
                     ],
                   )
-              )
+              ),
+              IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
             ],
           ),
           body: Center(

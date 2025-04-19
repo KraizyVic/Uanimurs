@@ -1,12 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
 import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/watch_history.dart';
-import 'package:uanimurs/UI/custom_widgets/widgets.dart';
-import 'package:uanimurs/constants.dart';
-
-import '../models/ani_watch_model.dart';
 import '../models/anime_model.dart';
 import '../models/settings_model.dart';
 import 'package:collection/collection.dart';
@@ -93,6 +88,67 @@ class AccountCubit extends Cubit<List<AccountModel>> {
     await _reloadAccounts();
   }
 
+  // Add search term to history
+  Future<void> addToSearchHistory(String searchTerm) async {
+    final account = activeAccount;
+    if (account == null) return;
+
+    await isar.writeTxn(() async {
+      // Remove if it already exists
+      final updatedHistory = account.searchHistory.toList();
+      updatedHistory.remove(searchTerm);
+      updatedHistory.insert(0, searchTerm);
+
+      // Optional: Limit to last 20
+      if (updatedHistory.length > 20) {
+        updatedHistory.removeRange(20, updatedHistory.length);
+      }
+
+      account.searchHistory = updatedHistory; // ✅ REASSIGN THE LIST
+
+
+      await isar.accountModels.put(account);
+
+    });
+
+    await _reloadAccounts();
+  }
+
+
+  // Remove search term from history
+  Future<void> removeSearchTerm(String term) async {
+    final account = activeAccount;
+    if (account == null) return;
+
+    await isar.writeTxn(() async {
+      // Create a new growable list from the fixed-length one
+      final updatedList = List<String>.from(account.searchHistory);
+      updatedList.remove(term);
+
+      // Reassign the growable list to account
+      account.searchHistory = updatedList;
+
+      await isar.accountModels.put(account);
+    });
+
+    await _reloadAccounts(); // Optional UI update
+  }
+
+
+
+  // Clear search history
+  Future<void> clearSearchHistory() async {
+    final account = activeAccount;
+    if (account == null) return;
+
+    await isar.writeTxn(() async {
+      account.searchHistory = []; // Assigning a new growable list
+      await isar.accountModels.put(account);
+    });
+
+    await _reloadAccounts();
+  }
+
 
 
   // ---------------------------- Watchlist Management ----------------------------
@@ -104,7 +160,7 @@ class AccountCubit extends Cubit<List<AccountModel>> {
     if (currentAccount == null) return;
 
     await isar.writeTxn(() async {
-      final existingAnime = await isar.animeModels.filter().idEqualTo(anime.id).findFirst();
+      final existingAnime = await isar.animeModels.filter().alIdEqualTo(anime.alId).findFirst();
       final animeToAdd = existingAnime ?? anime;
 
       if (existingAnime == null) {
@@ -121,18 +177,35 @@ class AccountCubit extends Cubit<List<AccountModel>> {
   Future<void> removeFromWatchList(AnimeModel anime) async {
     final currentAccount = activeAccount;
     if (currentAccount == null) return;
+
     await isar.writeTxn(() async {
+      // Make sure the anime has an ID
+      AnimeModel? existing = await isar.animeModels.get(anime.id);
+      if (existing == null) {
+        final storedId = await isar.animeModels.put(anime);
+        anime.id = storedId; // if you're using a copy method
+      }
+
+      // Remove anime from current account's watch list
       currentAccount.watchList.remove(anime);
       await currentAccount.watchList.save();
 
-      final isStillLinked = await isar.accountModels.filter().watchList((q) => q.idEqualTo(anime.id)).count() > 0;
+      // Check if any other accounts are still linking this anime
+      final linksCount = await isar.accountModels
+          .filter()
+          .watchList((q) => q.alIdEqualTo(anime.alId))
+          .count();
 
-      if (!isStillLinked) {
+      if (linksCount == 0) {
         await isar.animeModels.delete(anime.id);
       }
     });
+
     await _reloadAccounts();
   }
+
+
+
 
   // Clear the watchlist of the active account
 
@@ -149,39 +222,83 @@ class AccountCubit extends Cubit<List<AccountModel>> {
   }
 
   // Add anime to watch history
-  Future<void> addToWatchHistory({
-    required AnimeModel animeModel,
-    required Anime aniwatchAnime,
-    required int watchTime,
-    required int totalTime,
-    required int watchedEpisodes,
-    required int totalEpisodes,
-  }) async {
+  Future<void> addOrUpdateWatchHistory(WatchHistory newEntry) async {
     final account = activeAccount;
     if (account == null) return;
 
-    final entry = WatchHistory(
+    await isar.writeTxn(() async {
+      // Try to find existing entry by anilistId
+      final existing = await isar.watchHistorys
+          .filter()
+          .anilistIdEqualTo(newEntry.anilistId)
+          .findFirst();
 
-    )
-      ..watchTime = watchTime
-      ..totalTime = totalTime
-      ..watchedEpisodes = watchedEpisodes
-      ..totalEpisodes = totalEpisodes
-      ..anilistAnime.value = animeModel
-      ..aniwatchAnime.value = aniwatchAnime;
+      if (existing != null) {
+        // Update fields
+        existing
+          ..anime = newEntry.anime
+          ..name = newEntry.name
+          ..image = newEntry.image
+          ..watchTime = newEntry.watchTime
+          ..totalTime = newEntry.totalTime
+          ..lastWatched = DateTime.now()
+          ..streamingLink = newEntry.streamingLink
+          ..watchedEpisodes = newEntry.watchedEpisodes
+          ..totalEpisodes = newEntry.totalEpisodes
+          ..watchingEpisode = newEntry.watchingEpisode;
+
+        await isar.watchHistorys.put(existing);
+
+        // Remove then re-add to reorder it as the last added (top-most when fetched)
+        account.watchHistory.remove(existing);
+        account.watchHistory.add(existing);
+      } else {
+        // Save new entry
+        final id = await isar.watchHistorys.put(newEntry);
+        newEntry.id = id;
+        account.watchHistory.add(newEntry);
+      }
+
+      await account.watchHistory.save(); // Save link changes
+    });
+
+    await _reloadAccounts(); // Refresh state if needed
+  }
+
+
+  // Remove anime from watch history
+
+  Future<void> removeFromWatchHistory(WatchHistory entry) async {
+    final account = activeAccount;
+    if (account == null) return;
 
     await isar.writeTxn(() async {
-      await isar.watchHistorys.put(entry);
-      await entry.anilistAnime.save();
-      await entry.aniwatchAnime.save();
-
-      account.watchHistory.add(entry);
+      account.watchHistory.remove(entry);
       await account.watchHistory.save();
-      await isar.accountModels.put(account);
+
+      // Check if entry still linked to any other account
+      final isStillLinked = await isar.accountModels
+          .filter()
+          .watchHistory((q) => q.anilistIdEqualTo(entry.anilistId))
+          .count() > 0;
+
+      if (!isStillLinked) {
+        await isar.watchHistorys.delete(entry.id);
+      }
     });
 
     await _reloadAccounts();
   }
+
+  // Load watch history for the active account
+  Future<void> loadWatchHistory() async {
+    final account = activeAccount;
+    if (account == null) return;
+    await account.watchHistory.load();
+  }
+
+
+
 
 
   // ---------------------------- Internal Utilities ----------------------------

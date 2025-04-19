@@ -2,7 +2,6 @@
 import 'package:isar/isar.dart';
 
 import 'ani_watch_model.dart';
-import 'anime_model.dart';
 
 part 'watch_history.g.dart';
 
@@ -10,18 +9,30 @@ part 'watch_history.g.dart';
 class WatchHistory {
   Id id = Isar.autoIncrement;
 
+  Anime? anime;
+  String? name;
+  String? image;
+  int? anilistId;
+
   int? watchTime;
   int? totalTime;
+  DateTime? lastWatched;
+  StreamingLink? streamingLink;
 
-  final IsarLink<AnimeModel> anilistAnime = IsarLink<AnimeModel>();
-  final IsarLink<Anime> aniwatchAnime = IsarLink<Anime>();
-
-  int? watchedEpisodes;
+  int? watchingEpisode;
+  List<int>? watchedEpisodes;
   int? totalEpisodes;
 
   WatchHistory({
+    this.anime,
+    this.name,
+    this.image,
+    this.anilistId,
     this.watchTime,
     this.totalTime,
+    this.lastWatched,
+    this.streamingLink,
+    this.watchingEpisode,
     this.watchedEpisodes,
     this.totalEpisodes,
   });

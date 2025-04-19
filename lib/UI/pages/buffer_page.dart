@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
+import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/watch_history.dart';
 import 'package:uanimurs/UI/pages/player_page.dart';
 
 import '../../Logic/services/aniwatch_services.dart';
@@ -11,13 +13,19 @@ class BufferPage extends StatefulWidget {
   final String type;
   final int episodeNumber;
   final Episodes episodes;
+  final Anime anime;
+  final AnimeModel animeModel;
+  final WatchHistory? watchHistory;
   const BufferPage({
     super.key,
     required this.episodeId,
     required this.serverName,
     required this.type,
     required this.episodeNumber,
-    required this.episodes
+    required this.episodes,
+    required this.anime,
+    required this.animeModel,
+    this.watchHistory,
   });
 
   @override
@@ -85,7 +93,7 @@ class _BufferPageState extends State<BufferPage> {
           future: streamLink,
           builder: (context,snapshot){
             if(snapshot.hasData){
-              return PlayerPage(streamingLink: snapshot.data!, episodeNumber: widget.episodeNumber,episodes: widget.episodes,);
+              return PlayerPage(streamingLink: snapshot.data!, episodeNumber: widget.episodeNumber,episodes: widget.episodes,anime: widget.anime,animeModel: widget.animeModel,watchHistory: widget.watchHistory,);
             }else if(snapshot.hasError){
               return Center(
                 child: Text("Error loading stream link"),
