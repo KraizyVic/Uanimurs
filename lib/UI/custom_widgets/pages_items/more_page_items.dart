@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../pages/more_page_pages/about_page.dart';
-import '../pages/more_page_pages/appearance_page.dart';
+import '../../pages/more_page_pages/about_page.dart';
+import '../../pages/more_page_pages/appearance_page.dart';
 class FunctionalSettings extends StatelessWidget {
   const FunctionalSettings({super.key});
 

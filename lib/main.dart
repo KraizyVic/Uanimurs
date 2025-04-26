@@ -199,32 +199,69 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
 
   int pageIndex = 0;
+  int exitTapCount = 0;
 
   @override
   void initState() {
     super.initState();
-    checkForUpdates(context,false);
+    UpdateService.checkForUpdates(context,false);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AccountCubit,List<AccountModel?>>(
       builder: (context,state) {
-        return Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            fixedColor: Theme.of(context).colorScheme.primary,
-            currentIndex: pageIndex,
-            onTap: changePage,
-            items: [
-              BottomNavigationBarItem(icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 1 ? Icons.search : Icons.search_outlined), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 2 ? Icons.folder : Icons.folder_outlined), label: 'My list'),
-              BottomNavigationBarItem(icon: Icon(pageIndex == 3 ? Icons.more_horiz : Icons.more_horiz_outlined), label: 'More'),
-            ],
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (!didPop) {
+              if(pageIndex != 0){
+                setState(() {
+                  pageIndex = 0;
+                });
+              }else{
+                exitTapCount++;
+                bool exitConfirmed = exitTapCount >= 2;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    content: Center(child: Text('Press back again to exit',style: TextStyle(color: Theme.of(context).colorScheme.tertiary))),
+                    elevation: 0,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    duration: Duration(seconds: 2),
+                    shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(10)),
+                    margin: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+                  )
+                );
+
+                // Wait 2 seconds then reset count
+                await Future.delayed(Duration(seconds: 2));
+                exitTapCount = 0;
+
+                if (exitConfirmed) {
+                  SystemNavigator.pop();
+                }
+              }
+            } else {
+              debugPrint("Screen popped with result: $result");
+            }
+          },
+          child: Scaffold(
+            bottomNavigationBar: BottomNavigationBar(
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              fixedColor: Theme.of(context).colorScheme.primary,
+              currentIndex: pageIndex,
+              onTap: changePage,
+              items: [
+                BottomNavigationBarItem(icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 1 ? Icons.search : Icons.search_outlined), label: 'Search'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 2 ? Icons.folder : Icons.folder_outlined), label: 'My list'),
+                BottomNavigationBarItem(icon: Icon(pageIndex == 3 ? Icons.more_horiz : Icons.more_horiz_outlined), label: 'More'),
+              ],
+            ),
+            body: mainPages[pageIndex],
           ),
-          body: mainPages[pageIndex],
         );
       }
     );
@@ -232,11 +269,10 @@ class _MainPageState extends State<MainPage> {
 
   void changePage(int index) {
     setState(() {
+      if(index != 0){
+        exitTapCount = 0;
+      }
       pageIndex = index;
     });
-  }
-
-  void checkForUpdates(BuildContext context,bool isManualCheck) {
-    UpdateService.checkForUpdates(context,isManualCheck);
   }
 }

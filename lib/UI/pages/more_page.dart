@@ -4,7 +4,7 @@ import 'package:uanimurs/UI/pages/welcome_page.dart';
 
 import '../../Logic/bloc/account_cubit.dart' show AccountCubit;
 import '../../Logic/models/account_model.dart';
-import '../custom_widgets/more_page_items.dart';
+import '../custom_widgets/pages_items/more_page_items.dart';
 import 'more_page_pages/account_page.dart';
 
 class MorePage extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,8 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
-import 'package:uanimurs/UI/custom_widgets/player_page_items.dart';
+import 'package:uanimurs/UI/custom_widgets/pages_items/player_page_items.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
+import 'package:uanimurs/constants.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../Logic/bloc/account_cubit.dart';
@@ -22,6 +24,7 @@ class PlayerPage extends StatefulWidget {
   final Episodes? episodes;
   final AnimeModel animeModel;
   final Anime anime;
+  final String serverName;
   final WatchHistory? watchHistory;
   final Future<Episodes>? episodesFuture;
 
@@ -32,6 +35,7 @@ class PlayerPage extends StatefulWidget {
     required this.episodes,
     required this.animeModel,
     required this.anime,
+    required this.serverName,
     this.watchHistory,
     this.episodesFuture
   });
@@ -57,9 +61,6 @@ class _PlayerPageState extends State<PlayerPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late Future <Episodes> episodes ;
-
-
-
 
   @override
   void initState() {
@@ -90,12 +91,13 @@ class _PlayerPageState extends State<PlayerPage> {
 
 
   Future<void> _initializeVideoPlayer(String videoUrl,int elapsedTime) async {
+    print(widget.streamingLink.sources!.first.url);
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(videoUrl),
       httpHeaders: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.11',
-        "origin": "https://aniwatchtv.to/",
-        "referer": "https://aniwatchtv.to/",
+        "origin": "https://megacloud.blog",
+        "referer": "https://megacloud.blog/",
       },
     )..initialize().then((_) async{
         if (mounted) {
@@ -103,7 +105,6 @@ class _PlayerPageState extends State<PlayerPage> {
         }
         final position = widget.watchHistory?.watchTime ?? elapsedTime;
         print("\nElapsedTime: $position\n");
-
         await _controller.seekTo(Duration(milliseconds: position));
         await _controller.play();
       });
@@ -114,7 +115,6 @@ class _PlayerPageState extends State<PlayerPage> {
     _controller.addListener(() {
       if (_controller.value.isPlaying && !_isWakeLockEnabled) {
         WakelockPlus.enable(); // Enable wake lock when video starts playing
-
         setState(() {
           _isWakeLockEnabled = true;
         });
@@ -128,12 +128,13 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
 
-  Future<void> _fetchSubtitles(String subtitleUrl) async {
-    final url = subtitleUrl; // Replace with your .vtt URL
-    final response = await http.get(Uri.parse(url));
-
+  Future<void> _fetchSubtitles(String subtitleUrl) async {// Replace with your .vtt URL
+    final response = await http.get(Uri.parse(subtitleUrl));
+    final content = utf8.decode(response.bodyBytes);
+    print("Your Subtitle LINK IS : $subtitleUrl");
     if (response.statusCode == 200) {
-      subtitles = _parseVTT(response.body);
+      subtitles = _parseVTT(content);
+      print("Subtitle fetched: ${response.body}");
       _startSubtitleSync();
     } else {
       print('Failed to load subtitles');
@@ -143,7 +144,7 @@ class _PlayerPageState extends State<PlayerPage> {
   List<Subtitle> _parseVTT(String vttContent) {
     final lines = vttContent.split('\n');
     List<Subtitle> parsedSubtitles = [];
-    RegExp timeRegex = RegExp(r'(\d+):(\d+):(\d+\.\d+) --> (\d+):(\d+):(\d+\.\d+)');
+    RegExp timeRegex = RegExp(r'(?:(\d+):)?(\d+):(\d+\.\d+)\s-->\s(?:(\d+):)?(\d+):(\d+\.\d+)');
 
     for (int i = 0; i < lines.length; i++) {
       if (timeRegex.hasMatch(lines[i])) {
@@ -154,7 +155,8 @@ class _PlayerPageState extends State<PlayerPage> {
         String subtitleText = '';
         int j = i + 1;
         while (j < lines.length && lines[j].trim().isNotEmpty) {
-          subtitleText += '${lines[j]}\n';
+          subtitleText += '${lines[j].replaceAll(RegExp(r'<[^>]*>'), '')}\n';
+          //subtitleText += '${cleanText(lines[j])}\n';
           j++;
         }
 
@@ -166,9 +168,10 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   int _convertToMs(String? hours, String? minutes, String? seconds) {
-    return (int.parse(hours!) * 3600000) +
-        (int.parse(minutes!) * 60000) +
-        (double.parse(seconds!) * 1000).toInt();
+    int h = hours != null ? int.parse(hours) : 0;
+    int m = int.parse(minutes!);
+    int s = (double.parse(seconds!) * 1000).toInt();
+    return h * 3600000 + m * 60000 + s;
   }
 
   void _startSubtitleSync() {
@@ -256,7 +259,12 @@ class _PlayerPageState extends State<PlayerPage> {
 
     super.dispose();
   }
+
   String drawerTitle = "Video";
+  int aspectRatioIndex = 0;
+  bool isPaused = false;
+  int leftTapCount = 0;
+  int rightTapCount = 0;
 
 
   Future<bool> _onWillPop() async {
@@ -281,14 +289,13 @@ class _PlayerPageState extends State<PlayerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
         key: _scaffoldKey,
         drawer: Drawer(
           shape: RoundedRectangleBorder(),
-          backgroundColor: Colors.black87,
+          backgroundColor: Colors.black,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Column(
@@ -320,15 +327,18 @@ class _PlayerPageState extends State<PlayerPage> {
                                     // Dispose the old controller BEFORE setState
                                     await _controller.dispose();
                                     // Create a new video controller
-                                    final newController = VideoPlayerController
-                                        .networkUrl(
-                                        Uri.parse(snapshot.data![index].url)
+                                    final newController = VideoPlayerController.networkUrl(
+                                      Uri.parse(snapshot.data![index].url,),
+                                      httpHeaders: {
+                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.11',
+                                        "origin": "https://megacloud.blog",
+                                        "referer": "https://megacloud.blog/",
+                                      },
                                     );
                                     // Initialize the new controller
                                     await newController.initialize();
                                     // Seek to the saved position
-                                    await newController.seekTo(
-                                        Duration(milliseconds: elapsedTime));
+                                    await newController.seekTo(Duration(milliseconds: elapsedTime));
                                     // Set the new controller in state
                                     if (mounted) {
                                       setState(() {
@@ -347,7 +357,7 @@ class _PlayerPageState extends State<PlayerPage> {
                             }
                           );
                         }else if(snapshot.hasError){
-                          return Center(child: Text("Error"));
+                          return Center(child: Text("Error",style: TextStyle(color: Colors.white),));
                         }else{
                           return Center(child: CircularProgressIndicator());
                         }
@@ -383,7 +393,7 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
         ),
         endDrawer: Drawer(
-          backgroundColor: Colors.black87,
+          backgroundColor: Colors.black,
           shape: RoundedRectangleBorder(),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 10),
@@ -425,7 +435,7 @@ class _PlayerPageState extends State<PlayerPage> {
                       itemCount: widget.episodes!.episodes.length,
                       itemBuilder: (context,index){
                         return ListTile(
-                          onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes!.episodes[index].episodeId, serverName: "megacloud", type: "sub", episodeNumber: index, episodes: widget.episodes! ,anime: widget.anime,animeModel: widget.animeModel,))),
+                          onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes!.episodes[index].episodeId, serverName: widget.serverName, type: "sub", episodeNumber: index, episodes: widget.episodes! ,anime: widget.anime,animeModel: widget.animeModel,))),
                           //autofocus: widget.episodes.episodes[index].episodeNo-1 == widget.episodeNumber,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           tileColor: widget.episodes!.episodes[index].episodeNo-1 == widget.episodeNumber ? Theme.of(context).colorScheme.primary.withAlpha(100) : Colors.transparent,
@@ -446,10 +456,17 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
           child: Stack(
             children: [
-              _controller.value.isInitialized ? Center(child: AspectRatio(aspectRatio: _controller.value.aspectRatio,child: VideoPlayer(_controller))) : Center(child: CircularProgressIndicator()),
-              ! _controller.value.isPlaying && _controller.value.isBuffering ? Center(
-                child: CircularProgressIndicator(),
-              ) : Container(),
+              _controller.value.isInitialized ? Center(
+                child: AspectRatio(
+                    aspectRatio: aspectRatios(context)[aspectRatioIndex]["value"] == 0 ? _controller.value.aspectRatio : aspectRatios(context)[aspectRatioIndex]["value"],
+                    child: VideoPlayer(_controller)
+                )
+                ) : Center(child: CircularProgressIndicator()),
+              isPaused ? Center(
+                child: _controller.value.isBuffering ? Container() : CircularProgressIndicator(),
+              ) : Center(
+                child: _controller.value.isBuffering && !_controller.value.isPlaying ? CircularProgressIndicator() : Container(),
+              ),
               // Subtitle display
               Center(
                 child: Column(
@@ -469,11 +486,67 @@ class _PlayerPageState extends State<PlayerPage> {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: (){
-                  _showControlsAndStartTimer();
-                },
+              Row(
+                children: [
+                  /*Expanded(
+                    child: GestureDetector(
+                      onTap: (){
+                        setState(() {
+                          leftTapCount++;
+                          Future.delayed(
+                            Duration(milliseconds:500), () {
+                              if (leftTapCount >= 2) {
+                                _controller.seekTo(Duration(seconds: _controller.value.position.inSeconds - 10 * leftTapCount-1));
+                                leftTapCount = 0;
+                              }else {
+                                leftTapCount = 0;
+                              }
+                            }
+                          );
+                        });
+                      },
+                    ),
+                  ),*/
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: (){
+                        _showControlsAndStartTimer();
+                      },
+                      onDoubleTap: (){
+                        setState(() {
+                          _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                          isPaused = !_controller.value.isPlaying;
+                        });
+                      },
+                    ),
+                  ),
+                  /*Expanded(
+                    child: GestureDetector(
+                      onTap: (){
+                        _showControlsAndStartTimer();
+                      },
+                    ),
+                  ),*/
+                ],
               ),
+              !_showControls && isPaused  ? Center(
+                child: GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      isPaused = false;
+                    });
+                    _controller.play();
+                  },
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 500),
+                    decoration: BoxDecoration(shape: BoxShape.circle,color: Colors.black54),
+                      child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(Icons.play_arrow,size: 60,color: Theme.of(context).colorScheme.primary,),
+                    )
+                  )
+                )
+              ) : Container(),
               _showControls ? PlayerControls(
                 isFullScreen: true,
                 episodes: widget.episodes == null ? Episodes(totalEpisodes: 0, episodes: []) : widget.episodes!,
@@ -489,20 +562,19 @@ class _PlayerPageState extends State<PlayerPage> {
                   });
                 },
                 onAudioAtap: () {
-                  _controller.pause();
+                  //_controller.pause();
                   setState(() {
                     drawerTitle = "Audio";
                   });
                   print(drawerTitle);
-                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                  _scaffoldKey.currentState!.openDrawer(); // Open drawer dynamically
                 },
-
                 onVideoTap: () {
                   _controller.pause();
                   setState(() {
                     drawerTitle = "Video";
                   });
-                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                  _scaffoldKey.currentState!.openDrawer(); // Open drawer dynamically
                 },
 
                 onSubtitleTap: () {
@@ -510,7 +582,7 @@ class _PlayerPageState extends State<PlayerPage> {
                   setState(() {
                     drawerTitle = "Subtitles";
                   });
-                  _scaffoldKey.currentState!.openDrawer(); // 🔥 Open drawer dynamically
+                  _scaffoldKey.currentState!.openDrawer(); // Open drawer dynamically
                 },
 
                 onExit:()async{
@@ -523,7 +595,7 @@ class _PlayerPageState extends State<PlayerPage> {
                       watchTime: _controller.value.position.inMilliseconds,
                       totalTime: _controller.value.duration.inMilliseconds,
                       lastWatched : DateTime.now(),watchedEpisodes: [],
-                      watchingEpisode: widget.episodeNumber+1,
+                      watchingEpisode: widget.episodeNumber + 1,
                       streamingLink: widget.streamingLink,
                       totalEpisodes: widget.episodes?.totalEpisodes ?? 0,
                     )
@@ -531,6 +603,16 @@ class _PlayerPageState extends State<PlayerPage> {
                   print(widget.episodeNumber);
                   Navigator.pop(context);
                 },
+                onPause: (){
+                  setState(() {
+                    _controller.value.isPlaying ? _controller.pause() : _controller.play();
+                    isPaused = !_controller.value.isPlaying;
+                  });
+                },
+                anime: widget.anime,
+                animeModel: widget.animeModel,
+                episodeNumber: widget.episodeNumber,
+                serverName: widget.serverName,
 
                 fullScreen: IconButton(
                   icon: Icon(
@@ -539,6 +621,12 @@ class _PlayerPageState extends State<PlayerPage> {
                   ),
                   onPressed: (){},
                 ),
+                changeAspectRatio: (){
+                  setState(() {
+                    aspectRatioIndex = (aspectRatioIndex + 1) % aspectRatios(context).length;
+                  });
+                },
+                aspectRatioText: aspectRatios(context)[aspectRatioIndex]["label"],
               ): Container(),
             ],
           ),

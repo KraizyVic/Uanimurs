@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../Logic/models/ani_watch_model.dart';
 import '../../Logic/models/anime_model.dart';
 import '../../Logic/services/anilist_service.dart';
-import 'anime_details_page_items.dart';
+import 'pages_items/anime_details_page_items.dart';
 import '../pages/home_page.dart';
 import '../pages/more_page.dart';
 import '../pages/my_list_page.dart';

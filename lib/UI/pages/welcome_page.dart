@@ -56,7 +56,7 @@ class WelcomePage extends StatelessWidget {
                 padding: EdgeInsets.all(30),
                 child: MaterialButton(
                   onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>RegistrationPage())),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                   color: Theme.of(context).colorScheme.primary,
                   textColor: Theme.of(context).colorScheme.onPrimary,

@@ -1,21 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class UpdateService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   static const MethodChannel _platform = MethodChannel('app.updater/channel');
 
-  static Future<void> checkForUpdates(BuildContext context,bool isManualCheck) async {
+  static Future<void> checkForUpdates(BuildContext context, bool isManualCheck) async {
     final info = await PackageInfo.fromPlatform();
     final currentVersion = info.version;
 
@@ -32,22 +28,20 @@ class UpdateService {
 
       if (isNew) {
         _showUpdateSheet(context, latestVersion, changelog, apkUrl);
-      }else{
-        isManualCheck ? showDialog(
+      } else if (isManualCheck) {
+        showDialog(
           context: context,
-          builder: (context){
-            return AlertDialog(
-              title: Text("No updates available"),
-              content: Row(
-                children: [
-                  Image.asset("lib/UI/assets/thumbs_up.png",width: 100,height: 100,fit: BoxFit.cover,),
-                  SizedBox(width: 10,),
-                  Expanded(child: Text("You are using the latest version of Uanimurs"))
-                ],
-              ),
-            );
-          }
-        ) : null;
+          builder: (context) => AlertDialog(
+            title: const Text("No updates available"),
+            content: Row(
+              children: [
+                Image.asset("lib/UI/assets/thumbs_up.png", width: 100, height: 100, fit: BoxFit.cover),
+                const SizedBox(width: 10),
+                const Expanded(child: Text("You are using the latest version of Uanimurs")),
+              ],
+            ),
+          ),
+        );
       }
     } else {
       print('Failed to fetch latest release');
@@ -61,160 +55,89 @@ class UpdateService {
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: const Text('New Update Available!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 8),
-              Center(child: Text('Version: $latestVersion')),
-              const SizedBox(height: 8),
-              Text('Changelog:', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-              const SizedBox(height: 8),
-              SingleChildScrollView(child: Text(changelog)),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: TextButton(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height*0.5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(
+                  child: Text('New Update Available!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 8),
+                Center(child: Text('Version: $latestVersion')),
+                const SizedBox(height: 8),
+                Text('Changelog:', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                const SizedBox(height: 8),
+                Expanded(child: SingleChildScrollView(child: Text(changelog))),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextButton(
                         style: TextButton.styleFrom(
                           backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
                         ),
-                        onPressed: () {
+                        onPressed: (){
                           Navigator.pop(context);
                         },
-                        child: Text("Later")
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+                        child: const Text("Later"),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        downloadAndInstallApk(apkUrl, "app_release.apk");
-                      },
-                      child: const Text('Download & Install'),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await downloadWithDownloadManager(apkUrl, "app_release.apk");
+                        },
+                        child: const Text('Download & Install'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  static Future<void> downloadAndInstallApk(String url, String apkFileName) async {
-    // Request permission for storage
-    final status = await Permission.storage.request();
-    final notificationStatus = await Permission.notification.request();
-    if (notificationStatus.isDenied) {
-      print("Notification permission denied");
-      await Permission.notification.request();
-      return;
-    }
-    if (status.isPermanentlyDenied) {
-      print("Storage permission permanently denied");
-      return;
-    }
-    if (status.isDenied) {
-      print("Storage permission denied");
-      await Permission.storage.request();
-    }
+  static Future<void> downloadWithDownloadManager(String url, String fileName) async {
 
-    final dir = await getExternalStorageDirectory();
-    final savePath = "${dir!.path}/$apkFileName";
-
-    Dio dio = Dio();
-
-    // Initialize notifications plugin
-    await _notificationsPlugin.initialize(const InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-    ));
-
+    await _showAppNotification("Download started", "Download begun and is being handled by the system download manager. Please wait...");
     try {
-      await dio.download(
-        url,
-        savePath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            final progress = ((received / total) * 100).floor();
-            _showDownloadProgressNotification(progress);
-          }
-        },
-        deleteOnError: true,
-      );
-
-      // Show download complete notification
-      await _showDownloadCompleteNotification();
-
-      // Install APK
-      await installApk(savePath);
+      print("Starting download...");
+      await _platform.invokeMethod('startDownload', {
+        'url': url,
+        'fileName': fileName,
+      });
     } catch (e) {
-      print("Download failed: $e");
-      await _showErrorNotification("Download Failed", "An error occurred while downloading the update.");
+      print("DownloadManager error: $e");
+      await _showAppNotification("Download Failed", "Could not start system download manager.");
     }
   }
 
-  static Future<void> installApk(String filePath) async {
-    try {
-      await _platform.invokeMethod('installApk', {'filePath': filePath});
-    } on PlatformException catch (e) {
-      print("Failed to install APK: '${e.message}'");
-      await _showErrorNotification("Install Failed", "There was an error while installing the update.");
+  static Future<void> _showAppNotification(String title, String body) async {
+    await _notificationsPlugin.initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/hellow'),
+      ),
+    );
+
+   await Permission.notification.request();
+    if (await Permission.notification.isPermanentlyDenied) {
+      await openAppSettings();
+    }else{
+      await Permission.notification.request();
     }
-  }
 
-  static Future<void> _showDownloadProgressNotification(int progress) async {
-    final android = AndroidNotificationDetails(
-      'update_channel',
-      'App Updates',
-      channelDescription: 'Progress of app update',
-      importance: Importance.low,
-      priority: Priority.low,
-      showProgress: true,
-      enableVibration: true,
-      onlyAlertOnce: true,
-      enableLights: true,
-      maxProgress: 100,
-      progress: progress,
-    );
-
-    await _notificationsPlugin.show(
-      0,
-      'Downloading update...',
-      '$progress%',
-      NotificationDetails(android: android),
-    );
-  }
-
-  static Future<void> _showDownloadCompleteNotification() async {
-    final android = AndroidNotificationDetails(
-      'update_complete',
-      'Download Complete',
-      channelDescription: 'Update download finished',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    await _notificationsPlugin.show(
-      1,
-      'Update Ready',
-      'Tap to install the update.',
-      NotificationDetails(android: android),
-    );
-  }
-
-  static Future<void> _showErrorNotification(String title, String body) async {
-    final android = AndroidNotificationDetails(
+    const android = AndroidNotificationDetails(
       'error_channel',
       'Download Error',
       channelDescription: 'Error during update process',
@@ -223,18 +146,30 @@ class UpdateService {
     );
 
     await _notificationsPlugin.show(
-      2,
+      0,
       title,
       body,
-      NotificationDetails(android: android),
+      const NotificationDetails(android: android),
     );
+  }
+
+  static Future<bool> _checkPermissions() async {
+    if (Platform.isAndroid) {
+      // For Android 10+ (API level 29+)
+      if (await Permission.requestInstallPackages.status.isGranted) {
+        return true;
+      }
+      final status = await Permission.requestInstallPackages.request();
+      return status.isGranted;
+    }
+    return true; // For other platforms
   }
 }
 
 class VersionHelper {
   static bool isNewVersionAvailable(String currentVersion, String latestVersion) {
-    final current = currentVersion.replaceAll("v", "").replaceAll(".", "").trim();
-    final latest = latestVersion.replaceAll("v", "").replaceAll(".", "").trim();
-    return int.parse(latest) > int.parse(current);
+    final current = currentVersion.replaceAll(RegExp(r'[^\d]'), '');
+    final latest = latestVersion.replaceAll(RegExp(r'[^\d]'), '');
+    return int.tryParse(latest)! > int.tryParse(current)!;
   }
 }

@@ -19,6 +19,8 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final AnimeService _animeService = AnimeService();
   late Future<List<AnimeModel>> _searchResults = Future.value([]);
+  final TextEditingController _searchController = TextEditingController();
+
   String _searchTerm = '';
 
   void _searchAnime() {
@@ -96,6 +98,12 @@ class _SearchPageState extends State<SearchPage> {
                         itemCount: activeAccount.searchHistory.length,
                         itemBuilder: (context,index){
                           return ListTile(
+                            onTap: (){
+                              setState(() {
+                                _searchTerm = activeAccount.searchHistory[index];
+                                _searchResults = _animeService.searchAnime(searchTerm: _searchTerm);
+                              });
+                            },
                             title: Text(activeAccount.searchHistory[index]),
                             trailing: IconButton(
                               onPressed: ()=>context.read<AccountCubit>().removeSearchTerm(activeAccount.searchHistory[index]),

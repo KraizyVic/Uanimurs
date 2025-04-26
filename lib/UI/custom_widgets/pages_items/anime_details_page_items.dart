@@ -7,10 +7,11 @@ import 'package:uanimurs/Logic/services/aniwatch_services.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 import 'package:uanimurs/UI/pages/player_page.dart';
 
-import '../../Logic/global_functions.dart';
-import '../../Logic/models/ani_watch_model.dart';
-import '../../Logic/models/watch_history.dart';
-import '../pages/buffer_page.dart';
+import '../../../Logic/global_functions.dart';
+import '../../../Logic/models/ani_watch_model.dart';
+import '../../../Logic/models/watch_history.dart';
+import '../../../constants.dart';
+import '../../pages/buffer_page.dart';
 
 class BannerDetails extends StatefulWidget {
   final AnimeModel animeModel;
@@ -34,7 +35,6 @@ class BannerDetails extends StatefulWidget {
 class _BannerDetailsState extends State<BannerDetails> {
   late Future<Servers> servers;
   late Future<Episodes> episodes;
-  int unresponsiveServer = 0;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -65,7 +65,21 @@ class _BannerDetailsState extends State<BannerDetails> {
                 SizedBox(height: 5,),
                 Row(
                   children: [
-                    ClipRRect( borderRadius: BorderRadius.circular(10),child: Image.network(widget.animeModel.coverImage.extraLarge ?? "", width: 100,fit: BoxFit.cover,)),
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          height: 150,
+                          width: 100,
+                          child: PageView(
+                            scrollDirection: Axis.vertical,
+                            physics: AlwaysScrollableScrollPhysics(),
+                            children: [
+                              Image.network(widget.animeModel.coverImage.extraLarge ?? "",fit: BoxFit.cover,height: 150,width: 100,),
+                              Image.network(widget.anime.img ?? "",fit: BoxFit.cover,height: 150,width: 100,),
+                            ]
+                          ),
+                        ),
+                    ),
                     SizedBox(width: 10,),
                     Expanded(
                       child: Column(
@@ -115,12 +129,11 @@ class _BannerDetailsState extends State<BannerDetails> {
                                                                     return ListView.builder(
                                                                       itemCount: serverSnapshot.data!.sub.length,
                                                                       itemBuilder: (context,index){
+                                                                        int wathedEpisode = widget.watchHistory!.watchingEpisode! - 1;
                                                                         return ListTile(
                                                                           onTap: (){
-                                                                            if(index != unresponsiveServer){
-                                                                              Navigator.pop(context);
-                                                                              Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: 0,episodes: snapshot.data!,anime: widget.anime, animeModel: widget.animeModel,watchHistory: widget.watchHistory,)));
-                                                                            }
+                                                                            Navigator.pop(context);
+                                                                            Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: wathedEpisode ,episodes: snapshot.data!,anime: widget.anime, animeModel: widget.animeModel,watchHistory: widget.watchHistory,)));
                                                                           },
                                                                           title: Text(
                                                                             serverSnapshot.data!.sub[index].serverName,
@@ -128,7 +141,12 @@ class _BannerDetailsState extends State<BannerDetails> {
                                                                               color: Theme.of(context).colorScheme.primary.withAlpha(index != unresponsiveServer ? 255 : 150),
                                                                             ),
                                                                           ),
-                                                                          subtitle: Text("Multi Quality",style: TextStyle(color: Theme.of(context).colorScheme.tertiary),),
+                                                                          subtitle: Text(
+                                                                            "Multi Quality",
+                                                                            style: TextStyle(
+                                                                              color: Theme.of(context).colorScheme.tertiary.withAlpha(index != unresponsiveServer ? 255 : 150)
+                                                                            )
+                                                                          ),
                                                                           trailing: Text(
                                                                             index != unresponsiveServer ? "Active" : "Inactive",
                                                                             style: TextStyle(
@@ -243,10 +261,8 @@ class _BannerDetailsState extends State<BannerDetails> {
                                                                     itemBuilder: (context,index){
                                                                       return ListTile(
                                                                         onTap: (){
-                                                                          if(index != unresponsiveServer){
-                                                                            Navigator.pop(context);
-                                                                            Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: 0,episodes: snapshot.data!,anime: widget.anime, animeModel: widget.animeModel,)));
-                                                                          }
+                                                                          Navigator.pop(context);
+                                                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: 0,episodes: snapshot.data!,anime: widget.anime, animeModel: widget.animeModel,)));
                                                                         },
                                                                         title: Text(
                                                                           serverSnapshot.data!.sub[index].serverName,

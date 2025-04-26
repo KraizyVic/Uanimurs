@@ -56,10 +56,22 @@ class CustomIconTextButton extends StatelessWidget {
         children: [
           icon,
           SizedBox(width: 10,),
-          Text(buttonName)
+          Text(buttonName,style: TextStyle(color: Colors.white),)
         ],
       ),
     );
   }
 }
+
+Widget buttonWithCenterIcon(IconData icon,VoidCallback onTap, {bool isActive = true}) => MaterialButton(
+  padding: EdgeInsets.all(0),
+  minWidth: 55,
+  height: 55,
+  elevation: 0,
+  shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10)
+  ),
+  onPressed: onTap,
+  child: Icon(icon,color: isActive ? Colors.white : Colors.white.withOpacity(0.5),size: 40)
+);
 

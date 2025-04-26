@@ -7,7 +7,7 @@ import '../../Logic/global_functions.dart';
 import '../../Logic/models/ani_watch_model.dart';
 import '../../Logic/models/watch_history.dart';
 import '../custom_widgets/bottom_nav_bar_pages.dart';
-import '../custom_widgets/anime_details_page_items.dart';
+import '../custom_widgets/pages_items/anime_details_page_items.dart';
 import 'buffer_page.dart';
 
 class AnimeDetailsPage extends StatefulWidget {
@@ -118,7 +118,6 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                           watchHistory: widget.watchHistory,
                           onPressedContinue: widget.watchHistory != null ?() {
                             //episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
-
                           } : null
                         ),
                         Column(

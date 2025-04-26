@@ -138,12 +138,23 @@ class _HomepageState extends State<Homepage> {
                       ),
                       SizedBox(
                         height: 120,
-                        child: ListView.builder(
-                          itemCount: context.read<AccountCubit>().activeAccount!.watchHistory.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context,index){
-                            return WatchHistoryTile(watchHistory: context.read<AccountCubit>().activeAccount!.watchHistory.toList().reversed.elementAt(index),);
-                          }
+                        child: Builder(
+                          builder: (context) {
+                            final account = context.watch<AccountCubit>().activeAccount!;
+                            final sortedHistory = account.watchHistory
+                                .toList()
+                              ..sort((a, b) => b.lastWatched!.compareTo(a.lastWatched!)); // latest first
+
+                            return ListView.builder(
+                              itemCount: sortedHistory.length,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return WatchHistoryTile(
+                                  watchHistory: sortedHistory[index],
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                     ],

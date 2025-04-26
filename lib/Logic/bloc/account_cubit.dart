@@ -252,6 +252,7 @@ class AccountCubit extends Cubit<List<AccountModel>> {
         // Remove then re-add to reorder it as the last added (top-most when fetched)
         account.watchHistory.remove(existing);
         account.watchHistory.add(existing);
+
       } else {
         // Save new entry
         final id = await isar.watchHistorys.put(newEntry);

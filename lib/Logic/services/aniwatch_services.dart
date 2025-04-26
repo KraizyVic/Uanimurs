@@ -51,7 +51,14 @@ class AniWatchService{
 
   Future<List<M3U8Quality>> getQualityLinks(String m3u8Url) async {
     try {
-      final response = await http.get(Uri.parse(m3u8Url));
+      final response = await http.get(
+        Uri.parse(m3u8Url),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.11',
+          "origin": "https://megacloud.blog",
+          "referer": "https://megacloud.blog/",
+        }
+      );
 
       if (response.statusCode != 200) {
         throw Exception("Failed to load M3U8 file");

@@ -40,7 +40,9 @@ class _BufferPageState extends State<BufferPage> {
   void initState() {
     super.initState();
     // Use edgeToEdge instead of immersiveSticky
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,overlays: []);
+    SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.immersiveSticky,overlays: []
+    );
 
     // Keep the transparent UI overlays
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -54,12 +56,6 @@ class _BufferPageState extends State<BufferPage> {
       DeviceOrientation.landscapeRight,
     ]);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemChrome.setEnabledSystemUIMode(
-        SystemUiMode.edgeToEdge,
-        overlays: [],
-      );
-    });
     streamLink = AniWatchService().getStreamingLink(widget.episodeId, widget.serverName,widget.type);
   }
 
@@ -93,7 +89,7 @@ class _BufferPageState extends State<BufferPage> {
           future: streamLink,
           builder: (context,snapshot){
             if(snapshot.hasData){
-              return PlayerPage(streamingLink: snapshot.data!, episodeNumber: widget.episodeNumber,episodes: widget.episodes,anime: widget.anime,animeModel: widget.animeModel,watchHistory: widget.watchHistory,);
+              return PlayerPage(streamingLink: snapshot.data!, episodeNumber: widget.episodeNumber,episodes: widget.episodes,anime: widget.anime,serverName: widget.serverName,animeModel: widget.animeModel,watchHistory: widget.watchHistory,);
             }else if(snapshot.hasError){
               return Center(
                 child: Text("Error loading stream link"),

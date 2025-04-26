@@ -1,5 +1,9 @@
 
-import 'dart:ui';
+
+
+import 'package:flutter/cupertino.dart';
+
+int unresponsiveServer = 2;
 
 List<String?> pfps = [
   null,
@@ -40,4 +44,28 @@ List<String> termsOfService = [
   "Uanimurs is ! Controlled",
   "Uanimurs is for everyone",
   "Someone PLEASE HIRE ME",
+];
+
+/*List<double> aspectRatios(BuildContext context) => [
+  0,        // No aspect ratio (Original)
+  16/9,     // Standard HD (YouTube, most modern content)
+  MediaQuery.of(context).size.aspectRatio,      // Fills the entire screen
+  4 / 3,    // Old TV / retro content
+  1 / 1,    // Square (Instagram posts)
+  21 / 9,   // Ultra-wide (cinematic, some movies)
+  9 / 16,   // Vertical (TikTok, Instagram Reels, Shorts)
+  3 / 2,    // DSLR / photography ratio
+  2 / 1,
+
+];*/
+
+List<Map<String,dynamic>> aspectRatios(BuildContext context)=>[
+  { "label": "Original", "value": 0 },
+  { "label": "16:9", "value": 16 / 9 },
+  { "label": "Fill", "value": MediaQuery.of(context).size.width / MediaQuery.of(context).size.height},
+  { "label": "4:3", "value": 4 / 3 },
+  { "label": "1:1", "value": 1 / 1 },
+  { "label": "21:9", "value": 21 / 9 },
+  { "label": "3:2", "value": 3 / 2 },
+  { "label": "2:1", "value": 2 / 1 },
 ];

@@ -3,11 +3,14 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
-import 'package:uanimurs/UI/custom_widgets/anime_details_page_items.dart';
+import 'package:uanimurs/UI/custom_widgets/pages_items/anime_details_page_items.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
+import 'package:uanimurs/UI/pages/buffer_page.dart';
+import 'package:uanimurs/constants.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
+import '../../../Logic/bloc/account_cubit.dart';
+import '../../../Logic/models/anime_model.dart';
 
 class PlayerControls extends StatefulWidget {
   final Widget fullScreen;
@@ -20,8 +23,16 @@ class PlayerControls extends StatefulWidget {
   final VoidCallback onVideoTap;
   final VoidCallback onSubtitleTap;
   final VoidCallback onExit;
+  final VoidCallback onPause;
+  final VoidCallback changeAspectRatio;
   final VideoPlayerController controller;
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final Anime anime;
+  final int episodeNumber;
+  final AnimeModel animeModel;
+  final String serverName;
+  final String aspectRatioText;
+
   const PlayerControls({
     super.key,
     required this.controller,
@@ -33,9 +44,16 @@ class PlayerControls extends StatefulWidget {
     required this.onVideoTap,
     required this.onSubtitleTap,
     required this.onExit,
+    required this.onPause,
+    required this.changeAspectRatio,
     required this.episodes,
     required this.episodeIndex,
-    required this.scaffoldKey
+    required this.scaffoldKey,
+    required this.anime,
+    required this.animeModel,
+    required this.episodeNumber,
+    required this.serverName,
+    required this.aspectRatioText,
   });
 
   @override
@@ -78,7 +96,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.arrow_back_ios),
+                          Icon(Icons.arrow_back_ios,color: Colors.white,),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -86,64 +104,74 @@ class _PlayerControlsState extends State<PlayerControls> {
                                 "Episode ${widget.episodes.episodes[widget.episodeIndex].episodeNo}",
                                 style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),
                               ),
-                              Text(widget.episodes.episodes[widget.episodeIndex].name)
+                              Text(widget.episodes.episodes[widget.episodeIndex].name,style: TextStyle(color: Colors.white),)
                             ],
                           )
                         ],
                       ),
                     ),
                     Spacer(),
+                    Text(
+                      "${widget.controller.value.size.width.toInt()} x ${widget.controller.value.size.height.toInt()}",
+                    ),
                     widget.episodes.episodes.length > 1 ? MaterialButton(
                       onPressed: (){
-                        widget.controller.pause();
+                        //widget.controller.pause();
                         widget.scaffoldKey.currentState!.openEndDrawer();
                       },
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: Column(
                         children: [
-                          Icon(Icons.folder),
-                          Text("Episodes"),
+                          Icon(Icons.folder,color: Colors.white,),
+                          Text("Episodes",style: TextStyle(color: Colors.white),),
                         ],
                       ),
                     ):SizedBox()
                   ]
                 ),
               ),
-              Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  widget.episodes.episodes.length > 1 ? IconButton(
-                    onPressed: (){
-                      widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds-10));
-                    },
-                    icon: Icon(Icons.replay_10,size: 50,)
-                  ):SizedBox(),
-                   IconButton(
-                    onPressed: (){
-                      setState(() {
-                        hasBeenPaused = !hasBeenPaused;
-                      });
-                      widget.resetControlTimer;
-                      widget.controller.value.isPlaying ? widget.controller.pause() : widget.controller.play();
-                    },
-                    icon: Icon(widget.controller.value.isPlaying ? Icons.pause : Icons.play_arrow,size: 70),
-                  ),
-                  widget.episodes.episodes.length > 1 ? IconButton(
-                    onPressed: (){
-                      widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds+10));
-                    }, icon: Icon(Icons.forward_10,size: 50)
-                  ):SizedBox(),
-                ],
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Spacer(),
+                    SizedBox(
+                      width: 100,
+                    ),
+                    widget.episodes.episodes.length > 1 ? buttonWithCenterIcon(
+                      isActive: widget.episodes.episodes.length > 1 && widget.episodeIndex > 0 ,
+                      Icons.skip_previous,
+                      ()=>widget.episodeIndex > 0 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes.episodes[widget.episodeIndex - 1].episodeId, serverName: widget.serverName, type: "sub", episodeNumber: widget.episodeNumber - 1, episodes: widget.episodes! ,anime: widget.anime,animeModel: widget.animeModel,))) : null,
+                    ):SizedBox(),
+                    SizedBox(width: 10,),
+                    buttonWithCenterIcon(Icons.replay_10, ()=>widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds-10))),
+                    SizedBox(width: 10,),
+                    IconButton(
+                      onPressed: widget.onPause,
+                      icon: Icon(widget.controller.value.isPlaying ? Icons.pause : Icons.play_arrow,size: 70,color: Colors.white,),
+                    ),
+                    SizedBox(width: 10,),
+                    buttonWithCenterIcon(Icons.forward_10, ()=>widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds+10))),
+                    SizedBox(width: 10,),
+                    widget.episodes.episodes.length > 1 ? buttonWithCenterIcon(
+                      isActive: widget.episodes.episodes.length > 1 && widget.episodeIndex < widget.episodes.episodes.length - 1,
+                      Icons.skip_next,
+                      ()=>widget.episodeIndex < widget.episodes.episodes.length - 1 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes.episodes[widget.episodeIndex + 1].episodeId, serverName: widget.serverName, type: "sub", episodeNumber: widget.episodeNumber + 1, episodes: widget.episodes ,anime: widget.anime,animeModel: widget.animeModel,))) : null,
+                    ) : SizedBox(),
+                    Spacer(),
+                    SizedBox(
+                      width: 100,
+                    )
+                  ],
+                ),
               ),
-              Spacer(),
               Row(
                 children: [
                   /// Listen to controller changes and update only this Text widget
                   ValueListenableBuilder(
                     valueListenable: widget.controller,
                     builder: (context, VideoPlayerValue value, child) {
-                      return Text(formatDuration(value.position));
+                      return Text(formatDuration(value.position),style: TextStyle(color: Colors.white));
                     },
                   ),
 
@@ -167,12 +195,11 @@ class _PlayerControlsState extends State<PlayerControls> {
                       },
                     ),
                   ),
-
                   /// Listen and update only this Text widget
                   ValueListenableBuilder(
                     valueListenable: widget.controller,
                     builder: (context, VideoPlayerValue value, child) {
-                      return Text(formatDuration(value.duration));
+                      return Text(formatDuration(value.duration),style: TextStyle(color: Colors.white));
                     },
                   ),
                 ],
@@ -180,20 +207,31 @@ class _PlayerControlsState extends State<PlayerControls> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  IconButton(
+                    onPressed: (){},
+                    icon: Icon(Icons.aspect_ratio,color: Colors.transparent,),
+                  ),
+                  Spacer(),
                   CustomIconTextButton(
                     onTap: widget.onAudioAtap,
                     buttonName: "Audio",
-                    icon: Icon(Icons.headphones),
+                    icon: Icon(Icons.headphones,color: Colors.white,),
                   ),
                   CustomIconTextButton(
                     onTap: widget.onVideoTap,
                     buttonName: "Video",
-                    icon: Icon(Icons.tv),
+                    icon: Icon(Icons.tv,color: Colors.white,),
                   ),
                   CustomIconTextButton(
                     onTap: widget.onSubtitleTap,
                     buttonName: "Subtitles",
-                    icon: Icon(Icons.subtitles),
+                    icon: Icon(Icons.subtitles,color: Colors.white,),
+                  ),
+                  Spacer(),
+                  Text(widget.aspectRatioText),
+                  IconButton(
+                    onPressed: widget.changeAspectRatio,
+                    icon: Icon(Icons.aspect_ratio,color: Colors.white,),
                   ),
                 ],
               )
