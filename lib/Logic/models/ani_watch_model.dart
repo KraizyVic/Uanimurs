@@ -1,7 +1,5 @@
 import 'package:isar/isar.dart';
 
-part 'ani_watch_model.g.dart';
-
 // SEARCHED ANIME
 
 class SearchedAnimes {

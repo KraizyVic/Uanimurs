@@ -1,3 +1,4 @@
+/*
 import 'package:isar/isar.dart';
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/settings_model.dart';
@@ -54,5 +55,5 @@ class AccountModel {
 
     return newModel;
   }
-
 }
+*/

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/UI/pages/welcome_page.dart';
 
-import '../../../Logic/bloc/account_cubit.dart';
-import '../../../Logic/models/account_model.dart';
+import '../../../Logic/bloc/app_cubit.dart';
 import '../../custom_widgets/widgets.dart';
 
 class AccountPage extends StatefulWidget {
@@ -14,11 +14,11 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  TextEditingController _deleteControler = TextEditingController();
+  final TextEditingController _deleteControler = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Scaffold(
           resizeToAvoidBottomInset: false,
@@ -37,7 +37,7 @@ class _AccountPageState extends State<AccountPage> {
                     ],
                   )
               ),
-              IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
+              //IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
             ],
           ),
           body: Center(
@@ -50,32 +50,32 @@ class _AccountPageState extends State<AccountPage> {
                     children: [
                       CircleAvatar(
                         radius: 70,
-                        backgroundImage: AssetImage(context.read<AccountCubit>().activeAccount?.pfp ?? ""),
+                        backgroundImage: AssetImage(""),
                       ),
                       SizedBox(height: 10,),
-                      Text(context.read<AccountCubit>().activeAccount?.username ?? "",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)
+                      Text("Null",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)
                     ],
                   ),
                 ),
                 ListTile(
                   title: Text("Account Type"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.accountType ?? ""),
+                  trailing: Text("null"),
                 ),
                 ListTile(
                   title: Text("Created"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.created ?? ""),
+                  trailing: Text("null"),
                 ),
                 ListTile(
                   title: Text("Watchlist"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.watchList.length.toString() ?? 0.toString()),
+                  trailing: Text("null"),
                 ),
                 ListTile(
                   title: Text("Watched animes"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.watchHistory.length.toString() ?? 0.toString()),
+                  trailing: Text("Null"),
                 ),
                 ListTile(
                   title: Text("Favourites"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.favorites.length.toString() ?? 0.toString()),
+                  trailing: Text("Null"),
                 ),
                 Expanded(
                   child: Column(
@@ -92,7 +92,7 @@ class _AccountPageState extends State<AccountPage> {
                             builder: (context) {
                               return UpdateAccountModal(
                                 onUpdate: () async {
-                                  await context.read<AccountCubit>().updateAccount();
+                                  //await context.read<AccountCubit>().updateAccount();
                                 }
                               );
                             },
@@ -148,12 +148,12 @@ class _AccountPageState extends State<AccountPage> {
                                             )
                                           ),
                                           onPressed: () async{
-                                            if(_deleteControler.text != context.read<AccountCubit>().activeAccount?.username){
+                                            /*if(_deleteControler.text != context.read<AccountCubit>().activeAccount?.username){
                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Incorrect username")));
                                               return;
                                             }
                                             await context.read<AccountCubit>().deleteAccount();
-                                            state.isNotEmpty ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage() )) : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
+                                            state.isNotEmpty ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage() )) : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationPage()));*/
                                           },
                                           child: Text("Delete",)
                                         )
@@ -161,7 +161,6 @@ class _AccountPageState extends State<AccountPage> {
                                     ),
                                   ]
                                 )
-
                               );
                             }
                           );

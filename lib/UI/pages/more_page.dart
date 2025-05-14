@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart' show AccountCubit, AppCubit;
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/UI/pages/welcome_page.dart';
-
-import '../../Logic/bloc/account_cubit.dart' show AccountCubit;
-import '../../Logic/models/account_model.dart';
 import '../custom_widgets/pages_items/more_page_items.dart';
 import 'more_page_pages/account_page.dart';
 
@@ -12,7 +11,7 @@ class MorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+    return BlocBuilder<AppCubit, AppModel?>(
       builder: (context,state) {
         return Scaffold(
           appBar: AppBar(
@@ -29,12 +28,12 @@ class MorePage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: ListTile(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      leading: context.read<AccountCubit>().activeAccount?.pfp != null ? CircleAvatar(
+                      leading: CircleAvatar(
                         radius: 40,
-                        backgroundImage: AssetImage(context.read<AccountCubit>().activeAccount?.pfp ?? ""),): CircleAvatar(child: Icon(Icons.person),
+                        backgroundColor: Colors.red,
                       ),
-                      title: Text(context.read<AccountCubit>().activeAccount?.username ?? ""),
-                      subtitle: Text(context.read<AccountCubit>().activeAccount?.accountType ?? ""),
+                      title: Text("Null"),
+                      subtitle: Text("Null"),
                       trailing: Icon(Icons.arrow_forward_ios),
                       onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => AccountPage())),
                     ),
@@ -47,7 +46,7 @@ class MorePage extends StatelessWidget {
                   child: ListTile(
                     leading: Icon(Icons.logout),
                     title: Text("Log out"),
-                    onTap: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())),
+                    onTap: (){}//Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())),
                   ),
                 ),
               )

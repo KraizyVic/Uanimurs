@@ -23,7 +23,7 @@ const SettingsModelSchema = Schema(
       id: 1,
       name: r'layout',
       type: IsarType.object,
-      target: r'LayoutSettings',
+      target: r'GeneralSettings',
     ),
     r'player': PropertySchema(
       id: 2,
@@ -54,8 +54,8 @@ int _settingsModelEstimateSize(
       AppearanceSettingsSchema.estimateSize(
           object.appearance, allOffsets[AppearanceSettings]!, allOffsets);
   bytesCount += 3 +
-      LayoutSettingsSchema.estimateSize(
-          object.layout, allOffsets[LayoutSettings]!, allOffsets);
+      GeneralSettingsSchema.estimateSize(
+          object.layout, allOffsets[GeneralSettings]!, allOffsets);
   bytesCount += 3 +
       PlayerSettingsSchema.estimateSize(
           object.player, allOffsets[PlayerSettings]!, allOffsets);
@@ -77,10 +77,10 @@ void _settingsModelSerialize(
     AppearanceSettingsSchema.serialize,
     object.appearance,
   );
-  writer.writeObject<LayoutSettings>(
+  writer.writeObject<GeneralSettings>(
     offsets[1],
     allOffsets,
-    LayoutSettingsSchema.serialize,
+    GeneralSettingsSchema.serialize,
     object.layout,
   );
   writer.writeObject<PlayerSettings>(
@@ -110,12 +110,12 @@ SettingsModel _settingsModelDeserialize(
           allOffsets,
         ) ??
         const AppearanceSettings(),
-    layout: reader.readObjectOrNull<LayoutSettings>(
+    layout: reader.readObjectOrNull<GeneralSettings>(
           offsets[1],
-          LayoutSettingsSchema.deserialize,
+          GeneralSettingsSchema.deserialize,
           allOffsets,
         ) ??
-        const LayoutSettings(),
+        const GeneralSettings(),
     player: reader.readObjectOrNull<PlayerSettings>(
           offsets[2],
           PlayerSettingsSchema.deserialize,
@@ -147,12 +147,12 @@ P _settingsModelDeserializeProp<P>(
           ) ??
           const AppearanceSettings()) as P;
     case 1:
-      return (reader.readObjectOrNull<LayoutSettings>(
+      return (reader.readObjectOrNull<GeneralSettings>(
             offset,
-            LayoutSettingsSchema.deserialize,
+            GeneralSettingsSchema.deserialize,
             allOffsets,
           ) ??
-          const LayoutSettings()) as P;
+          const GeneralSettings()) as P;
     case 2:
       return (reader.readObjectOrNull<PlayerSettings>(
             offset,
@@ -185,7 +185,7 @@ extension SettingsModelQueryObject
   }
 
   QueryBuilder<SettingsModel, SettingsModel, QAfterFilterCondition> layout(
-      FilterQuery<LayoutSettings> q) {
+      FilterQuery<GeneralSettings> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'layout');
     });
@@ -437,24 +437,29 @@ extension AppearanceSettingsQueryObject
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-const LayoutSettingsSchema = Schema(
-  name: r'LayoutSettings',
-  id: 3559033267585353040,
+const GeneralSettingsSchema = Schema(
+  name: r'GeneralSettings',
+  id: -3915864087569561456,
   properties: {
-    r'layoutType': PropertySchema(
+    r'defaultServer': PropertySchema(
       id: 0,
+      name: r'defaultServer',
+      type: IsarType.long,
+    ),
+    r'layoutType': PropertySchema(
+      id: 1,
       name: r'layoutType',
       type: IsarType.long,
     )
   },
-  estimateSize: _layoutSettingsEstimateSize,
-  serialize: _layoutSettingsSerialize,
-  deserialize: _layoutSettingsDeserialize,
-  deserializeProp: _layoutSettingsDeserializeProp,
+  estimateSize: _generalSettingsEstimateSize,
+  serialize: _generalSettingsSerialize,
+  deserialize: _generalSettingsDeserialize,
+  deserializeProp: _generalSettingsDeserializeProp,
 );
 
-int _layoutSettingsEstimateSize(
-  LayoutSettings object,
+int _generalSettingsEstimateSize(
+  GeneralSettings object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -462,28 +467,30 @@ int _layoutSettingsEstimateSize(
   return bytesCount;
 }
 
-void _layoutSettingsSerialize(
-  LayoutSettings object,
+void _generalSettingsSerialize(
+  GeneralSettings object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.layoutType);
+  writer.writeLong(offsets[0], object.defaultServer);
+  writer.writeLong(offsets[1], object.layoutType);
 }
 
-LayoutSettings _layoutSettingsDeserialize(
+GeneralSettings _generalSettingsDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = LayoutSettings(
-    layoutType: reader.readLongOrNull(offsets[0]) ?? 0,
+  final object = GeneralSettings(
+    defaultServer: reader.readLongOrNull(offsets[0]) ?? 0,
+    layoutType: reader.readLongOrNull(offsets[1]) ?? 0,
   );
   return object;
 }
 
-P _layoutSettingsDeserializeProp<P>(
+P _generalSettingsDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -492,14 +499,72 @@ P _layoutSettingsDeserializeProp<P>(
   switch (propertyId) {
     case 0:
       return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 1:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-extension LayoutSettingsQueryFilter
-    on QueryBuilder<LayoutSettings, LayoutSettings, QFilterCondition> {
-  QueryBuilder<LayoutSettings, LayoutSettings, QAfterFilterCondition>
+extension GeneralSettingsQueryFilter
+    on QueryBuilder<GeneralSettings, GeneralSettings, QFilterCondition> {
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
+      defaultServerEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'defaultServer',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
+      defaultServerGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'defaultServer',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
+      defaultServerLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'defaultServer',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
+      defaultServerBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'defaultServer',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
       layoutTypeEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -509,7 +574,7 @@ extension LayoutSettingsQueryFilter
     });
   }
 
-  QueryBuilder<LayoutSettings, LayoutSettings, QAfterFilterCondition>
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
       layoutTypeGreaterThan(
     int value, {
     bool include = false,
@@ -523,7 +588,7 @@ extension LayoutSettingsQueryFilter
     });
   }
 
-  QueryBuilder<LayoutSettings, LayoutSettings, QAfterFilterCondition>
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
       layoutTypeLessThan(
     int value, {
     bool include = false,
@@ -537,7 +602,7 @@ extension LayoutSettingsQueryFilter
     });
   }
 
-  QueryBuilder<LayoutSettings, LayoutSettings, QAfterFilterCondition>
+  QueryBuilder<GeneralSettings, GeneralSettings, QAfterFilterCondition>
       layoutTypeBetween(
     int lower,
     int upper, {
@@ -556,8 +621,8 @@ extension LayoutSettingsQueryFilter
   }
 }
 
-extension LayoutSettingsQueryObject
-    on QueryBuilder<LayoutSettings, LayoutSettings, QFilterCondition> {}
+extension GeneralSettingsQueryObject
+    on QueryBuilder<GeneralSettings, GeneralSettings, QFilterCondition> {}
 
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types

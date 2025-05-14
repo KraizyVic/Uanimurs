@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uanimurs/Logic/models/github_model.dart';
 
-import '../../../Logic/bloc/account_cubit.dart';
+import '../../../Logic/bloc/app_cubit.dart';
 import '../../../Logic/global_functions.dart';
 import '../../../Logic/services/github_service.dart';
 import '../../../Logic/services/update_service.dart';
@@ -57,10 +57,10 @@ class _AboutPageState extends State<AboutPage> {
                     title: Text("App name"),
                     trailing: Text(appName),
                   ),
-                  ListTile(
+                  /*ListTile(
                     title: Text("Number of accounts"),
-                    trailing: Text("${context.read<AccountCubit>().state.length}"),
-                  ),
+                    trailing: Text("Null"),
+                  ),*/
                   ListTile(
                     title: Text("App version"),
                     trailing: Text(appVersion),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/account_cubit.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart';
 import 'package:uanimurs/Logic/models/account_model.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
 
 import '../custom_widgets/tiles.dart';
@@ -16,14 +17,10 @@ class MyListPage extends StatelessWidget {
         title: Text("My List"),
         forceMaterialTransparency: true,
       ),
-      body: BlocBuilder<AccountCubit, List<AccountModel?>>(
+      body: BlocBuilder<AppCubit, AppModel?>(
           builder: (context, state) {
             // Check if state is null or watchList is empty
-            if (context.read<AccountCubit>().activeAccount!.watchList.isEmpty) {
-              return Center(
-                child: Text("Your watchlist is empty"),
-              );
-            }
+
 
             // If we have a valid state and watchlist with items, show the grid
             return GridView.builder(
@@ -33,18 +30,12 @@ class MyListPage extends StatelessWidget {
                     crossAxisSpacing: 5,
                     mainAxisSpacing: 5
                 ),
-                itemCount: context.read<AccountCubit>().activeAccount!.watchList.length,
+                itemCount: 0,
                 itemBuilder: (context, index) {
-                  final animeList = context.read<AccountCubit>().activeAccount!.watchList.toList();
-                  return AnimeTile(
-                    animeModel: animeList[index],
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AnimeDetailsPage(
-                              animeModel: animeList[index],
-                            )
-                        )
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      color: Colors.red,
                     ),
                   );
                 }

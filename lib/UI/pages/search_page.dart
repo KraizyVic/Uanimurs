@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/account_cubit.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart';
 import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/UI/custom_widgets/tiles.dart';
 import '../../Logic/services/anilist_service.dart';
 import 'anime_details_page.dart';
@@ -43,9 +44,8 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
-        AccountModel activeAccount = context.read<AccountCubit>().activeAccount!;
         return Scaffold(
           appBar: AppBar(
             title: Text('Search',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
@@ -75,7 +75,7 @@ class _SearchPageState extends State<SearchPage> {
                   onChanged: _onSearchChanged,
                   onSubmitted: (value) async{
                     _searchAnime();
-                    await context.read<AccountCubit>().addToSearchHistory(value);
+                    //await context.read<AccountCubit>().addToSearchHistory(value);
                   },
                 ),
               ),
@@ -91,7 +91,7 @@ class _SearchPageState extends State<SearchPage> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     }
 
-                    if (!snapshot.hasData || snapshot.data!.isEmpty ) {
+                    /*if (!snapshot.hasData || snapshot.data!.isEmpty ) {
                       return context.read<AccountCubit>().activeAccount!.searchHistory.isEmpty ? Center(
                           child: Text('Enter something to search')
                       ) : ListView.builder(
@@ -112,7 +112,7 @@ class _SearchPageState extends State<SearchPage> {
                           );
                         }
                       );
-                    }
+                    }*/
 
                     final results = snapshot.data!;
                     return ListView.builder(
@@ -122,7 +122,7 @@ class _SearchPageState extends State<SearchPage> {
                         return AnimeListTile(
                           animeModel: anime,
                           onPressed: () async{
-                            await context.read<AccountCubit>().addToSearchHistory(anime.title.english == "null" ? anime.title.romaji ?? "" : anime.title.english ?? "");
+                            //await context.read<AccountCubit>().addToSearchHistory(anime.title.english == "null" ? anime.title.romaji ?? "" : anime.title.english ?? "");
                             Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: anime)));
                           }
                         );

@@ -9,10 +9,10 @@ import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/custom_widgets/pages_items/player_page_items.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
-import 'package:uanimurs/constants.dart';
+import 'package:uanimurs/Database/constants.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
+import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/watch_history.dart';
 import '../../Logic/services/aniwatch_services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -268,7 +268,7 @@ class _PlayerPageState extends State<PlayerPage> {
 
 
   Future<bool> _onWillPop() async {
-    await context.read<AccountCubit>().addOrUpdateWatchHistory(
+    /*await context.read<AccountCubit>().addOrUpdateWatchHistory(
       WatchHistory(
         anilistId: widget.animeModel.alId,
         anime: widget.anime,
@@ -282,7 +282,7 @@ class _PlayerPageState extends State<PlayerPage> {
         watchingEpisode: widget.episodeNumber,
         totalEpisodes: widget.episodes?.totalEpisodes ?? 0 ,
       ),
-    );
+    );*/
     return true; // let it pop
   }
 
@@ -586,7 +586,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 },
 
                 onExit:()async{
-                  await context.read<AccountCubit>().addOrUpdateWatchHistory(
+                  /*await context.read<AccountCubit>().addOrUpdateWatchHistory(
                     WatchHistory(
                       anilistId: widget.animeModel.alId,
                       anime: widget.anime,
@@ -599,7 +599,7 @@ class _PlayerPageState extends State<PlayerPage> {
                       streamingLink: widget.streamingLink,
                       totalEpisodes: widget.episodes?.totalEpisodes ?? 0,
                     )
-                  );
+                  );*/
                   print(widget.episodeNumber);
                   Navigator.pop(context);
                 },

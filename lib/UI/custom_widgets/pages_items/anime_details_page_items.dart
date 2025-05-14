@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/account_cubit.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart';
 import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Logic/services/aniwatch_services.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 import 'package:uanimurs/UI/pages/player_page.dart';
@@ -10,7 +11,7 @@ import 'package:uanimurs/UI/pages/player_page.dart';
 import '../../../Logic/global_functions.dart';
 import '../../../Logic/models/ani_watch_model.dart';
 import '../../../Logic/models/watch_history.dart';
-import '../../../constants.dart';
+import '../../../Database/constants.dart';
 import '../../pages/buffer_page.dart';
 
 class BannerDetails extends StatefulWidget {
@@ -91,7 +92,7 @@ class _BannerDetailsState extends State<BannerDetails> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              context.read<AccountCubit>().activeAccount?.watchHistory.any((element) => element.anilistId == widget.animeModel.alId) ?? false ? Expanded(
+                              Expanded(
                                 child: CustomTextButton(
                                   onTap: (){
                                     episodes = AniWatchService().getEpisodes(widget.watchHistory?.anime?.aniwatchId ?? "");
@@ -195,27 +196,15 @@ class _BannerDetailsState extends State<BannerDetails> {
                                   },
                                   buttonName: "Continue"
                                 ),
-                              ) : Container(),
+                              ),
                               SizedBox(width: 6,),
                               Expanded(
-                                child: BlocBuilder<AccountCubit, List<AccountModel>>(
+                                child: BlocBuilder<AppCubit, AppModel?>(
                                   builder: (context, state) {
-
-                                    // Check if the anime is in the active account's watchList
-                                    final isInList = context.read<AccountCubit>().activeAccount!.watchList.any((anime) => anime.malId == widget.animeModel.malId);
-
                                     return CustomTextButton(
-                                      isFilled: isInList,
-                                      onTap: () async {
-                                        if (isInList) {
-                                          // Remove anime from the watchList
-                                          await BlocProvider.of<AccountCubit>(context).removeFromWatchList(widget.animeModel);
-                                        } else {
-                                          // Add anime to the watchList
-                                          await BlocProvider.of<AccountCubit>(context).addToWatchList(widget.animeModel);
-                                        }
-                                      },
-                                      buttonName: isInList ? "- List" : "+ List",
+                                      isFilled: false,
+                                      onTap: () {  },
+                                      buttonName: "+ List",
                                     );
                                   },
                                 ),

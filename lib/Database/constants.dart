@@ -1,9 +1,7 @@
 
+import 'package:flutter/material.dart';
 
-
-import 'package:flutter/cupertino.dart';
-
-int unresponsiveServer = 2;
+int unresponsiveServer = 5;
 
 List<String?> pfps = [
   null,
@@ -45,19 +43,6 @@ List<String> termsOfService = [
   "Uanimurs is for everyone",
   "Someone PLEASE HIRE ME",
 ];
-
-/*List<double> aspectRatios(BuildContext context) => [
-  0,        // No aspect ratio (Original)
-  16/9,     // Standard HD (YouTube, most modern content)
-  MediaQuery.of(context).size.aspectRatio,      // Fills the entire screen
-  4 / 3,    // Old TV / retro content
-  1 / 1,    // Square (Instagram posts)
-  21 / 9,   // Ultra-wide (cinematic, some movies)
-  9 / 16,   // Vertical (TikTok, Instagram Reels, Shorts)
-  3 / 2,    // DSLR / photography ratio
-  2 / 1,
-
-];*/
 
 List<Map<String,dynamic>> aspectRatios(BuildContext context)=>[
   { "label": "Original", "value": 0 },

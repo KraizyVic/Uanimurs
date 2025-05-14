@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Logic/services/anilist_service.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
+import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/account_model.dart';
 import '../../Logic/models/anime_model.dart';
 import '../../Logic/models/watch_history.dart';
@@ -47,7 +48,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Scaffold(
           body: RefreshIndicator(
@@ -74,12 +75,9 @@ class _HomepageState extends State<Homepage> {
                                       context, MaterialPageRoute(
                                       builder: (context)=>AnimeDetailsPage(
                                         animeModel: snapshot.data![index],
-                                        watchHistory:  context.read<AccountCubit>().activeAccount?.watchHistory.firstWhere(
-                                          (element) => element.anilistId == snapshot.data![index].alId,
-                                          orElse: () => WatchHistory(anilistId: null, anime: null), // <- this makes it return null if nothing matches
+                                        watchHistory:  null, // <- this makes it return null if nothing matches
                                         ),
                                       )
-                                    )
                                     )
                                   );
                                 },
@@ -116,7 +114,7 @@ class _HomepageState extends State<Homepage> {
                                       onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>AccountPage())),
                                       child: CircleAvatar(
                                         radius: 25,
-                                        backgroundImage: AssetImage(context.read<AccountCubit>().activeAccount?.pfp ?? ""),
+                                        backgroundColor: Colors.red,
                                       ),
                                     )
                                   ],
@@ -129,36 +127,7 @@ class _HomepageState extends State<Homepage> {
                       ],
                     ),
                   ),
-                  context.read<AccountCubit>().activeAccount!.watchHistory.isNotEmpty ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
-                      ),
-                      SizedBox(
-                        height: 120,
-                        child: Builder(
-                          builder: (context) {
-                            final account = context.watch<AccountCubit>().activeAccount!;
-                            final sortedHistory = account.watchHistory
-                                .toList()
-                              ..sort((a, b) => b.lastWatched!.compareTo(a.lastWatched!)); // latest first
-
-                            return ListView.builder(
-                              itemCount: sortedHistory.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                return WatchHistoryTile(
-                                  watchHistory: sortedHistory[index],
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ):SizedBox(),
+                  SizedBox(),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),

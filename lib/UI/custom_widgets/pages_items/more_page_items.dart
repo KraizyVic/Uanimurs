@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../pages/more_page_pages/about_page.dart';
@@ -10,11 +9,18 @@ class FunctionalSettings extends StatelessWidget {
   @override
 
   Widget build(BuildContext context) {
-    double borderRadius = 10.0;
     return ClipRRect(
       //borderRadius: BorderRadius.circular(borderRadius),
       child: Column(
         children: [
+          /*ListTile(
+            leading: Icon(Icons.settings_outlined),
+            title: Text("General"),
+            subtitle: Text("Change default servers and more"),
+            onTap: () {
+              //Navigator.pushNamed(context, "/appearance");
+            },
+          ),*/
           ListTile(
             //shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(borderRadius), topRight: Radius.circular(borderRadius))),
             leading: Icon(Icons.color_lens_outlined),
@@ -25,15 +31,7 @@ class FunctionalSettings extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.grid_view_outlined),
-            title: Text("Layout"),
-            subtitle: Text("Change between grid and list view"),
-            onTap: () {
-              //Navigator.pushNamed(context, "/appearance");
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.subtitles),
+            leading: Icon(Icons.subtitles_outlined),
             title: Text("Subtitle Setting"),
             subtitle: Text("Tweak subtitle settings"),
             onTap: () {

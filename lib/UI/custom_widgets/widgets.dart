@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/account_cubit.dart';
-import 'package:uanimurs/Logic/models/account_model.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart';
 
-import '../../constants.dart';
+import '../../Logic/models/app_model.dart';
+import '../../Database/constants.dart';
 
 class UpdateAccountModal extends StatefulWidget {
   final VoidCallback onUpdate;
@@ -24,11 +24,11 @@ class _UpdateAccountModalState extends State<UpdateAccountModal> {
   void initState() {
     super.initState();
     // Initialize from the BloC
-    final activeAccount = context.read<AccountCubit>().activeAccount;
+    /*final activeAccount = context.read<AccountCubit>().activeAccount;
     tempUsername = activeAccount?.username ?? "";
     tempPfp = activeAccount?.pfp;
     selectedPfpIndex = pfps.indexOf(tempPfp);
-    _usernameController = TextEditingController(text: tempUsername);
+    _usernameController = TextEditingController(text: tempUsername);*/
   }
 
   @override
@@ -39,7 +39,7 @@ class _UpdateAccountModalState extends State<UpdateAccountModal> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -122,7 +122,7 @@ class _UpdateAccountModalState extends State<UpdateAccountModal> {
                   Spacer(),
                   TextButton(
                     onPressed: () async {
-                      await context.read<AccountCubit>().updateAccount(pfp: tempPfp,username: tempUsername);
+                      //await context.read<AccountCubit>().updateAccount(pfp: tempPfp,username: tempUsername);
                     },
                     child: const Text('Save'),
                   ),

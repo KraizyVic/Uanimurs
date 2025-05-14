@@ -6,7 +6,7 @@ import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
 import 'package:uanimurs/UI/pages/player_page.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
+import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/watch_history.dart';
 
 class AnimeListTile extends StatelessWidget {
@@ -236,7 +236,7 @@ class WatchHistoryTile extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: (){
-                        BlocProvider.of<AccountCubit>(context).removeFromWatchHistory(watchHistory);
+                        //BlocProvider.of<AccountCubit>(context).removeFromWatchHistory(watchHistory);
                         Navigator.pop(context);
                       },
                       child: Text("Delete")

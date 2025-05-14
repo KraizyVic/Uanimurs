@@ -1,7 +1,5 @@
 import 'package:isar/isar.dart';
 
-part 'anime_model.g.dart';
-
 @Collection()
 class AnimeModel {
   Id id = Isar.autoIncrement;
