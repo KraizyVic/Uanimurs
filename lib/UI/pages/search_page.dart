@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/account_cubit.dart';
-import 'package:uanimurs/Logic/models/account_model.dart';
+import 'package:uanimurs/Logic/bloc/app_cubit.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/UI/custom_widgets/tiles.dart';
 import '../../Logic/services/anilist_service.dart';
 import 'anime_details_page.dart';
@@ -26,6 +26,7 @@ class _SearchPageState extends State<SearchPage> {
   void _searchAnime() {
     setState(() {
       _searchResults = _animeService.searchAnime(searchTerm: _searchTerm);
+
     });
   }
 
@@ -43,13 +44,13 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
-        AccountModel activeAccount = context.read<AccountCubit>().activeAccount!;
         return Scaffold(
           appBar: AppBar(
             title: Text('Search',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
             forceMaterialTransparency: true,
+            automaticallyImplyLeading: false,
           ),
           body: Column(
             children: [
@@ -75,7 +76,7 @@ class _SearchPageState extends State<SearchPage> {
                   onChanged: _onSearchChanged,
                   onSubmitted: (value) async{
                     _searchAnime();
-                    await context.read<AccountCubit>().addToSearchHistory(value);
+                    await context.read<AppCubit>().addSearchTerm(value);
                   },
                 ),
               ),
@@ -92,21 +93,21 @@ class _SearchPageState extends State<SearchPage> {
                     }
 
                     if (!snapshot.hasData || snapshot.data!.isEmpty ) {
-                      return context.read<AccountCubit>().activeAccount!.searchHistory.isEmpty ? Center(
+                    return state!.searchHistory.isEmpty ? Center(
                           child: Text('Enter something to search')
                       ) : ListView.builder(
-                        itemCount: activeAccount.searchHistory.length,
+                        itemCount: state.searchHistory.length,
                         itemBuilder: (context,index){
                           return ListTile(
                             onTap: (){
                               setState(() {
-                                _searchTerm = activeAccount.searchHistory[index];
+                                _searchTerm = state.searchHistory[index];
                                 _searchResults = _animeService.searchAnime(searchTerm: _searchTerm);
                               });
                             },
-                            title: Text(activeAccount.searchHistory[index]),
+                            title: Text(state.searchHistory[index]),
                             trailing: IconButton(
-                              onPressed: ()=>context.read<AccountCubit>().removeSearchTerm(activeAccount.searchHistory[index]),
+                              onPressed: ()=>context.read<AppCubit>().removeSearchTerm(state.searchHistory[index]),
                               icon: Icon(Icons.remove)
                             ),
                           );
@@ -122,7 +123,7 @@ class _SearchPageState extends State<SearchPage> {
                         return AnimeListTile(
                           animeModel: anime,
                           onPressed: () async{
-                            await context.read<AccountCubit>().addToSearchHistory(anime.title.english == "null" ? anime.title.romaji ?? "" : anime.title.english ?? "");
+                            //await context.read<AccountCubit>().addToSearchHistory(anime.title.english == "null" ? anime.title.romaji ?? "" : anime.title.english ?? "");
                             Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: anime)));
                           }
                         );

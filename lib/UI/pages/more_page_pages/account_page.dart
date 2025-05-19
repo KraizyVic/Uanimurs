@@ -1,43 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uanimurs/Database/constants.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
+import 'package:uanimurs/Logic/models/supabase_models.dart';
 import 'package:uanimurs/UI/pages/welcome_page.dart';
 
-import '../../../Logic/bloc/account_cubit.dart';
-import '../../../Logic/models/account_model.dart';
+import '../../../Logic/bloc/app_cubit.dart';
 import '../../custom_widgets/widgets.dart';
 
 class AccountPage extends StatefulWidget {
-  const AccountPage({super.key});
+
+  final SupabaseAccountModel accountModel;
+  const AccountPage({
+    super.key,
+    required this.accountModel,
+  });
 
   @override
   State<AccountPage> createState() => _AccountPageState();
 }
 
 class _AccountPageState extends State<AccountPage> {
-  TextEditingController _deleteControler = TextEditingController();
+  final TextEditingController _deleteControler = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel?>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
             forceMaterialTransparency: true,
             actions: [
-              TextButton(
-                onPressed: (){
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
-                },
-                  child: Row(
-                    children: [
-                      Icon(Icons.add),
-                      SizedBox(width: 5,),
-                      Text("Add Account")
-                    ],
-                  )
-              ),
-              IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
+              //IconButton(onPressed: ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage())), icon: Icon(Icons.logout))
             ],
           ),
           body: Center(
@@ -50,32 +45,33 @@ class _AccountPageState extends State<AccountPage> {
                     children: [
                       CircleAvatar(
                         radius: 70,
-                        backgroundImage: AssetImage(context.read<AccountCubit>().activeAccount?.pfp ?? ""),
+                        backgroundImage: pfps[widget.accountModel.avatarId] != null ? AssetImage(pfps[widget.accountModel.avatarId]!) : null,
+                        child: pfps[widget.accountModel.avatarId] == null ? Icon(Icons.person,size: 70,) : null,
                       ),
                       SizedBox(height: 10,),
-                      Text(context.read<AccountCubit>().activeAccount?.username ?? "",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)
+                      Text(widget.accountModel.username,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)
                     ],
                   ),
                 ),
                 ListTile(
-                  title: Text("Account Type"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.accountType ?? ""),
+                  title: Text("Email"),
+                  trailing: Text(widget.accountModel.email),
                 ),
                 ListTile(
-                  title: Text("Created"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.created ?? ""),
+                  title: Text("Created at"),
+                  trailing: Text("${widget.accountModel.createdAt?.day} / ${widget.accountModel.createdAt?.month} / ${widget.accountModel.createdAt?.year}"),
                 ),
                 ListTile(
                   title: Text("Watchlist"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.watchList.length.toString() ?? 0.toString()),
+                  trailing: Text("${widget.accountModel.watchListCount}"),
                 ),
                 ListTile(
                   title: Text("Watched animes"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.watchHistory.length.toString() ?? 0.toString()),
+                  trailing: Text("${widget.accountModel.watchHistoryCount}"),
                 ),
                 ListTile(
                   title: Text("Favourites"),
-                  trailing: Text(context.read<AccountCubit>().activeAccount?.favorites.length.toString() ?? 0.toString()),
+                  trailing: Text("${widget.accountModel.favoritesCount}"),
                 ),
                 Expanded(
                   child: Column(
@@ -90,21 +86,19 @@ class _AccountPageState extends State<AccountPage> {
                             isScrollControlled: true,
                             useSafeArea: true,
                             builder: (context) {
-                              return UpdateAccountModal(
-                                onUpdate: () async {
-                                  await context.read<AccountCubit>().updateAccount();
-                                }
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                child: SingleChildScrollView(
+                                  child: UpdateAccountModal(
+                                    onUpdate: (){},
+                                    accountModel: widget.accountModel,
+                                  ),
+                                ),
                               );
                             },
                           );
                         }
-                    ),
-                      ListTile(
-                        leading: Icon(Icons.clear),
-                        title: Text("Clear Account Data"),
-                        onTap: () {}
                       ),
-
                       ListTile(
                         leading: Icon(Icons.delete,color: Colors.red,),
                         title: Text("Delete Account",style: TextStyle(color: Colors.red),),
@@ -148,12 +142,12 @@ class _AccountPageState extends State<AccountPage> {
                                             )
                                           ),
                                           onPressed: () async{
-                                            if(_deleteControler.text != context.read<AccountCubit>().activeAccount?.username){
+                                            /*if(_deleteControler.text != context.read<AccountCubit>().activeAccount?.username){
                                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Incorrect username")));
                                               return;
                                             }
                                             await context.read<AccountCubit>().deleteAccount();
-                                            state.isNotEmpty ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage() )) : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
+                                            state.isNotEmpty ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectAccountPage() )) : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationPage()));*/
                                           },
                                           child: Text("Delete",)
                                         )
@@ -161,7 +155,6 @@ class _AccountPageState extends State<AccountPage> {
                                     ),
                                   ]
                                 )
-
                               );
                             }
                           );

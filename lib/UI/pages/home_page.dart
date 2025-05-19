@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uanimurs/Database/constants.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Logic/services/anilist_service.dart';
+import 'package:uanimurs/Logic/services/supabase_services.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
+import 'package:uanimurs/UI/pages/auth_page.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
-import '../../Logic/models/account_model.dart';
+import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/anime_model.dart';
 import '../../Logic/models/watch_history.dart';
 import '../custom_widgets/tiles.dart';
@@ -47,7 +51,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCubit,List<AccountModel>>(
+    return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Scaffold(
           body: RefreshIndicator(
@@ -74,12 +78,9 @@ class _HomepageState extends State<Homepage> {
                                       context, MaterialPageRoute(
                                       builder: (context)=>AnimeDetailsPage(
                                         animeModel: snapshot.data![index],
-                                        watchHistory:  context.read<AccountCubit>().activeAccount?.watchHistory.firstWhere(
-                                          (element) => element.anilistId == snapshot.data![index].alId,
-                                          orElse: () => WatchHistory(anilistId: null, anime: null), // <- this makes it return null if nothing matches
+                                        watchHistory:  null, // <- this makes it return null if nothing matches
                                         ),
                                       )
-                                    )
                                     )
                                   );
                                 },
@@ -112,13 +113,45 @@ class _HomepageState extends State<Homepage> {
                                   children: [
                                     Text("UANIMURS",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 30,fontWeight: FontWeight.bold),),
                                     Spacer(),
-                                    GestureDetector(
-                                      onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>AccountPage())),
+                                    state!.isLoggedIn ? StreamBuilder(
+                                      stream: AccountService().fetchAccount(),
+                                      builder: (context,snapshot) {
+                                        if(snapshot.connectionState == ConnectionState.waiting){
+                                          return CircularProgressIndicator();
+                                        }
+                                        if(snapshot.hasError){
+                                          return Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                width: 1,
+                                                color: Colors.red
+                                              ),
+                                            ),
+                                            child: Icon(Icons.error_outline,color: Colors.red),
+                                          );
+                                        }
+                                        return GestureDetector(
+                                          onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AccountPage(accountModel: snapshot.data!,))),
+                                          child: CircleAvatar(
+                                            radius: 25,
+                                            backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
+                                            backgroundImage: pfps[snapshot.data!.avatarId] != null ? AssetImage(pfps[snapshot.data!.avatarId]!) : null,
+                                            child: pfps[snapshot.data!.avatarId] == null ? Icon(Icons.person):null,
+                                          ),
+                                        );
+                                      }
+                                    ) : GestureDetector(
+                                      onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginOrSignUpPage())),
                                       child: CircleAvatar(
                                         radius: 25,
-                                        backgroundImage: AssetImage(context.read<AccountCubit>().activeAccount?.pfp ?? ""),
+                                        backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
+                                        //backgroundImage: null,
+                                        child: Icon(Icons.person),
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -129,36 +162,78 @@ class _HomepageState extends State<Homepage> {
                       ],
                     ),
                   ),
-                  context.read<AccountCubit>().activeAccount!.watchHistory.isNotEmpty ? Column(
+                   state.isLoggedIn && Supabase.instance.client.auth.currentUser != null ? Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Padding(
+                           padding: const EdgeInsets.all(8.0),
+                           child: Row(
+                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                             children: [
+                               Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                               Text("server",style: TextStyle(color: Colors.green,fontSize: 15),),
+                             ],
+                           ),
+                         ),
+                         SizedBox(
+                             height: 120,
+                             child : StreamBuilder(
+                               stream: WatchHistoryService().fetchWatchHistory(),
+                               builder: (context,snapshot) {
+                                 if(snapshot.connectionState == ConnectionState.waiting){
+                                   return Center(child: CircularProgressIndicator());
+                                 }
+                                 if(snapshot.hasError){
+                                   print(snapshot.stackTrace);
+                                   return Center(
+                                     child: Text("Error: ${snapshot.error}"),
+                                   );
+                                 }
+                                 if(snapshot.data!.isEmpty){
+                                   return Center(child: Text("No history found"),);
+                                 }
+                                 List<WatchHistory> watchHistory = snapshot.data!;
+                                 watchHistory.sort((a,b) => b.lastWatched!.compareTo(a.lastWatched!));
+                                 return ListView.builder(
+                                     itemCount: watchHistory.length,
+                                     scrollDirection: Axis.horizontal,
+                                     itemBuilder: (context,index) {
+                                       return WatchHistoryTile(watchHistory: watchHistory[index],);
+                                       //return Container(width: 240,color: Colors.red,);
+                                       //return WatchHistoryTile(watchHistory: watchHistory[index],);
+                                     }
+                                 );
+                               }
+                             )
+                         )
+                       ]
+                   ) : state.watchHistory.isNotEmpty ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                            Text("local",style: TextStyle(color: Colors.green,fontSize: 15),),
+                          ],
+                        ),
                       ),
                       SizedBox(
                         height: 120,
-                        child: Builder(
-                          builder: (context) {
-                            final account = context.watch<AccountCubit>().activeAccount!;
-                            final sortedHistory = account.watchHistory
-                                .toList()
-                              ..sort((a, b) => b.lastWatched!.compareTo(a.lastWatched!)); // latest first
-
-                            return ListView.builder(
-                              itemCount: sortedHistory.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                return WatchHistoryTile(
-                                  watchHistory: sortedHistory[index],
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ):SizedBox(),
+                        child : ListView.builder(
+                          itemCount: state.watchHistory.length,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context,index) {
+                            List<WatchHistory> watchHistory = state.watchHistory.toList();
+                            watchHistory.sort((a,b) => b.lastWatched!.compareTo(a.lastWatched!));
+                            return WatchHistoryTile(watchHistory: watchHistory[index],);
+                          }
+                        )
+                      )
+                    ]
+                  ): Container(),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),

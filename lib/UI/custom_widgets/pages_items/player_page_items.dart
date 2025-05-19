@@ -6,10 +6,10 @@ import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/UI/custom_widgets/pages_items/anime_details_page_items.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
-import 'package:uanimurs/constants.dart';
+import 'package:uanimurs/Database/constants.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../Logic/bloc/account_cubit.dart';
+import '../../../Logic/bloc/app_cubit.dart';
 import '../../../Logic/models/anime_model.dart';
 
 class PlayerControls extends StatefulWidget {

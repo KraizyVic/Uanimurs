@@ -1,20 +1,20 @@
 import 'package:isar/isar.dart';
 
-import '../../constants.dart';
+import '../../Database/constants.dart';
 
 part 'settings_model.g.dart';
 
 @embedded
 class SettingsModel {
   late AppearanceSettings appearance;
-  late LayoutSettings layout;
+  late GeneralSettings layout;
   late SubtitleSettings subtitles;
   late PlayerSettings player;
 
   // Constructor without nullable parameters
   SettingsModel({
     AppearanceSettings appearance = const AppearanceSettings(),
-    LayoutSettings layout = const LayoutSettings(),
+    GeneralSettings layout = const GeneralSettings(),
     SubtitleSettings subtitles = const SubtitleSettings(),
     PlayerSettings player = const PlayerSettings(),
   }) {
@@ -27,7 +27,7 @@ class SettingsModel {
   // CopyWith method for updating settings
   SettingsModel copyWith({
     AppearanceSettings? appearance,
-    LayoutSettings? layout,
+    GeneralSettings? layout,
     SubtitleSettings? subtitles,
     PlayerSettings? player,
   }) {
@@ -72,19 +72,22 @@ class AppearanceSettings {
 }
 
 @embedded
-class LayoutSettings {
+class GeneralSettings {
+  final int defaultServer;
   final int layoutType;
-
   // Constructor with default values
-  const LayoutSettings({
+  const GeneralSettings({
+    this.defaultServer = 0,  // 0 = Vidstreaming, 1 = Vidsrc
     this.layoutType = 0,  // 0 = GridView, 1 = ListView
   });
 
   // CopyWith method
-  LayoutSettings copyWith({
+  GeneralSettings copyWith({
+    int? defaultServer,
     int? layoutType,
   }) {
-    return LayoutSettings(
+    return GeneralSettings(
+      defaultServer: defaultServer ?? this.defaultServer,
       layoutType: layoutType ?? this.layoutType,
     );
   }

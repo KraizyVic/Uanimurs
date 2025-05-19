@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/UI/pages/home_page.dart';
-import 'package:uanimurs/constants.dart';
+import 'package:uanimurs/Database/constants.dart';
 
-import '../../Logic/bloc/account_cubit.dart';
-import '../../Logic/models/account_model.dart';
+import '../../Logic/bloc/app_cubit.dart';
 import '../../main.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -204,7 +203,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     color: Theme.of(context).colorScheme.primary,
                     onPressed: () async{
 
-                      await context.read<AccountCubit>().createAccount(username.text,pfps[_selectedPfpIndex],);
+                      //await context.read<AccountCubit>().createAccount(username.text,pfps[_selectedPfpIndex],);
                       Navigator.pop(context);
                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
                     },
@@ -222,16 +221,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 }
 
-class SelectAccountPage extends StatelessWidget {
+/*class SelectAccountPage extends StatelessWidget {
   const SelectAccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AccountCubit,List<AccountModel?>>(
       builder: (context,state)=>Scaffold(
-        /*appBar: AppBar(
+        *//*appBar: AppBar(
           title: Text("Select Account"),
-        ),*/
+        ),*//*
         extendBody: true,
         extendBodyBehindAppBar: true,
         body: Column(
@@ -297,6 +296,6 @@ class SelectAccountPage extends StatelessWidget {
       )
     );
   }
-}
+}*/
 
 

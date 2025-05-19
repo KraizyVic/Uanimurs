@@ -35,7 +35,7 @@ class UpdateService {
             title: const Text("No updates available"),
             content: Row(
               children: [
-                Image.asset("lib/UI/assets/thumbs_up.png", width: 100, height: 100, fit: BoxFit.cover),
+                Image.asset("lib/Database/assets/thumbs_up.png", width: 100, height: 100, fit: BoxFit.cover),
                 const SizedBox(width: 10),
                 const Expanded(child: Text("You are using the latest version of Uanimurs")),
               ],

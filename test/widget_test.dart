@@ -8,8 +8,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:uanimurs/Logic/models/account_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/app_model.dart';
+import 'package:uanimurs/Logic/models/watch_history.dart';
 
 import 'package:uanimurs/main.dart';
 import 'package:isar/isar.dart';
@@ -22,7 +23,7 @@ void main() {
     setUp(() async {
       final dir = await getTemporaryDirectory();
       isar = await Isar.open(
-        [AccountModelSchema, AnimeModelSchema],
+        [AppModelSchema, AnimeModelSchema,WatchHistorySchema,],
         directory: dir.path,
       );
     });

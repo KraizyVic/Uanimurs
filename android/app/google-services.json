@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1032506021354",
+    "project_id": "uanimurs-c0c74",
+    "storage_bucket": "uanimurs-c0c74.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032506021354:android:95bea75fa5a597dbb3ce93",
+        "android_client_info": {
+          "package_name": "com.example.uanimurs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1032506021354-tbpi1par5cisfficn2fg1lp7ur69r7gn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyAg3vl4ALdvxIgE-UTZCXiwdDb0DLmzM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1032506021354-tbpi1par5cisfficn2fg1lp7ur69r7gn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

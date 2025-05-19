@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'ani_watch_model.g.dart';
-
 // SEARCHED ANIME
 
 class SearchedAnimes {
@@ -59,6 +59,16 @@ class Anime {
     duration: json["duration"] ?? "none",
     rated: json["rated"] ?? false,
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": aniwatchId,
+      "name": name,
+      "img": img,
+      "episodes": episodes?.toJson(),
+      "duration": duration,
+    };
+  }
 }
 
 @Embedded()
@@ -78,6 +88,14 @@ class SearchedAnimeEpisodes {
     sub: json["sub"] ?? 0,
     dub: json["dub"] ?? 0,
   );
+
+  Map<String, dynamic> toJson() {
+    return{
+      "eps": eps,
+      "sub": sub,
+      "dub": dub,
+    };
+  }
 }
 
 
@@ -212,6 +230,17 @@ class StreamingLink {
     anilistId: json["anilistID"],
     malId: json["malID"],
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "tracks": tracks?.map((x) => x.toJson()).toList(),
+      "intro": intro?.toJson(),
+      "outro": outro?.toJson(),
+      "sources": sources?.map((x) => x.toJson()).toList(),
+      "anilistID": anilistId,
+      "malID": malId,
+    };
+  }
 }
 
 @Embedded()
@@ -228,6 +257,13 @@ class Tro {
     start: json["start"],
     end: json["end"],
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "start": start,
+      "end": end,
+    };
+  }
 }
 
 @Embedded()
@@ -244,6 +280,13 @@ class Source {
     url: json["url"],
     type: json["type"],
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "url": url,
+      "type": type,
+      };
+  }
 }
 
 @Embedded()
@@ -266,6 +309,15 @@ class Track {
     kind: json["kind"] ?? "none",
     trackDefault: json["default"] ?? false,
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      "file": file,
+      "label": label,
+      "kind": kind,
+      "default": trackDefault,
+    };
+  }
 }
 
 class Subtitle {

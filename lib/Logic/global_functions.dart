@@ -4,7 +4,7 @@ import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../constants.dart';
+import '../Database/constants.dart';
 import 'models/ani_watch_model.dart';
 import 'models/github_model.dart';
 

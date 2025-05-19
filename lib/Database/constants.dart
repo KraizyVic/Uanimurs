@@ -1,24 +1,22 @@
 
+import 'package:flutter/material.dart';
 
-
-import 'package:flutter/cupertino.dart';
-
-int unresponsiveServer = 2;
+int unresponsiveServer = 5;
 
 List<String?> pfps = [
   null,
-  "lib/UI/assets/pfps/art-pfp-1687.png",
-  "lib/UI/assets/pfps/art-pfp-1688.png",
-  "lib/UI/assets/pfps/art-pfp-5249.png",
-  "lib/UI/assets/pfps/cyberpunk-pfp-1836.png",
-  "lib/UI/assets/pfps/cyberpunk-pfp-3053.png",
-  "lib/UI/assets/pfps/demon-slayer-pfp-1275.png",
-  "lib/UI/assets/pfps/demon-slayer-pfp-1279.png",
-  "lib/UI/assets/pfps/demon-slayer-pfp-2202.png",
-  "lib/UI/assets/pfps/monster-pfp-2807.png",
-  "lib/UI/assets/pfps/thumb350375139.png",
-  "lib/UI/assets/pfps/zero-two-pfp-3975.png",
-  "lib/UI/assets/pfps/zero-two-pfp-3981.png",
+  "lib/Database/assets/pfps/art-pfp-1687.png",
+  "lib/Database/assets/pfps/art-pfp-1688.png",
+  "lib/Database/assets/pfps/art-pfp-5249.png",
+  "lib/Database/assets/pfps/cyberpunk-pfp-1836.png",
+  "lib/Database/assets/pfps/cyberpunk-pfp-3053.png",
+  "lib/Database/assets/pfps/demon-slayer-pfp-1275.png",
+  "lib/Database/assets/pfps/demon-slayer-pfp-1279.png",
+  "lib/Database/assets/pfps/demon-slayer-pfp-2202.png",
+  "lib/Database/assets/pfps/monster-pfp-2807.png",
+  "lib/Database/assets/pfps/thumb350375139.png",
+  "lib/Database/assets/pfps/zero-two-pfp-3975.png",
+  "lib/Database/assets/pfps/zero-two-pfp-3981.png",
 ];
 
 Map<String,int> appColors = {
@@ -46,19 +44,6 @@ List<String> termsOfService = [
   "Someone PLEASE HIRE ME",
 ];
 
-/*List<double> aspectRatios(BuildContext context) => [
-  0,        // No aspect ratio (Original)
-  16/9,     // Standard HD (YouTube, most modern content)
-  MediaQuery.of(context).size.aspectRatio,      // Fills the entire screen
-  4 / 3,    // Old TV / retro content
-  1 / 1,    // Square (Instagram posts)
-  21 / 9,   // Ultra-wide (cinematic, some movies)
-  9 / 16,   // Vertical (TikTok, Instagram Reels, Shorts)
-  3 / 2,    // DSLR / photography ratio
-  2 / 1,
-
-];*/
-
 List<Map<String,dynamic>> aspectRatios(BuildContext context)=>[
   { "label": "Original", "value": 0 },
   { "label": "16:9", "value": 16 / 9 },
@@ -68,4 +53,10 @@ List<Map<String,dynamic>> aspectRatios(BuildContext context)=>[
   { "label": "21:9", "value": 21 / 9 },
   { "label": "3:2", "value": 3 / 2 },
   { "label": "2:1", "value": 2 / 1 },
+];
+
+List<String> myListGroupNames = [
+  "Online list",
+  "Local list",
+  "Favourites",
 ];
