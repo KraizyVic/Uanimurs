@@ -16,6 +16,8 @@ class BufferPage extends StatefulWidget {
   final Anime anime;
   final AnimeModel animeModel;
   final WatchHistory? watchHistory;
+  final bool isInWatchHistory;
+  final bool isContinuePress;
   const BufferPage({
     super.key,
     required this.episodeId,
@@ -26,6 +28,8 @@ class BufferPage extends StatefulWidget {
     required this.anime,
     required this.animeModel,
     this.watchHistory,
+    required this.isInWatchHistory,
+    this.isContinuePress = false,
   });
 
   @override
@@ -89,7 +93,17 @@ class _BufferPageState extends State<BufferPage> {
           future: streamLink,
           builder: (context,snapshot){
             if(snapshot.hasData){
-              return PlayerPage(streamingLink: snapshot.data!, episodeNumber: widget.episodeNumber,episodes: widget.episodes,anime: widget.anime,serverName: widget.serverName,animeModel: widget.animeModel,watchHistory: widget.watchHistory,);
+              return PlayerPage(
+                streamingLink: snapshot.data!,
+                episodeNumber: widget.episodeNumber,
+                episodes: widget.episodes,
+                anime: widget.anime,
+                serverName: widget.serverName,
+                animeModel: widget.animeModel,
+                watchHistory: widget.watchHistory,
+                isInWatchHistory: widget.isInWatchHistory,
+                isContinuePress: widget.isContinuePress,
+              );
             }else if(snapshot.hasError){
               return Center(
                 child: Text("Error loading stream link"),

@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'ani_watch_model.g.dart';
 // SEARCHED ANIME
@@ -155,10 +154,10 @@ class Episode {
   });
 
   factory Episode.fromJson(Map<String, dynamic> json) => Episode(
-    name: json["name"] == null ? "" : json["name"],
-    episodeNo: json["episodeNo"] == null ? 0 : json["episodeNo"],
-    episodeId: json["episodeId"] == null ? "" : json["episodeId"],
-    filler: json["filler"] == null ? false : json["filler"],
+    name: json["name"] ?? "",
+    episodeNo: json["episodeNo"] ?? 0,
+    episodeId: json["episodeId"] ?? "",
+    filler: json["filler"] ?? false,
   );
 }
 

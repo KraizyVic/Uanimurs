@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Database/constants.dart';
 import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Logic/models/supabase_models.dart';
-import 'package:uanimurs/UI/pages/welcome_page.dart';
 
 import '../../../Logic/bloc/app_cubit.dart';
 import '../../custom_widgets/widgets.dart';

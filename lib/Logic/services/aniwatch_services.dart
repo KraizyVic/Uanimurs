@@ -95,7 +95,6 @@ class AniWatchService{
 
       return qualityLinks;
     } catch (e) {
-      print("Error: $e");
       return [];
     }
   }

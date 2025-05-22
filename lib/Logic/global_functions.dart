@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:string_similarity/string_similarity.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
+import 'package:uanimurs/Logic/models/watch_history.dart';
+import 'package:uanimurs/Logic/services/aniwatch_services.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -46,7 +48,16 @@ Anime findBestAnimeMatch(String inputTitle, List<Anime> animeList) {
 
 // SHOW BOTTOM SHEETS
 
-void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episodeNumber,Episodes episodes,Anime anime,AnimeModel animeModel) {
+void showMyBottomSheet({
+  required BuildContext context,
+  required Future<Servers> servers,
+  required int episodeNumber,
+  required Episodes episodes,
+  required Anime anime,
+  required AnimeModel animeModel,
+  WatchHistory? watchHistory,
+  required bool isInWatchHistory,
+}) {
   showModalBottomSheet(
     context: context,
     //backgroundColor: Colors.blue[100],
@@ -78,7 +89,20 @@ void showMyBottomSheet(BuildContext context , Future<Servers> servers,int episod
                               return ListTile(
                                 onTap: (){
                                   Navigator.pop(context);
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: snapshot.data!.episodeId, serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,type: "sub",episodeNumber: episodeNumber,episodes: episodes,anime: anime,animeModel: animeModel,)));
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context)=>BufferPage(
+                                        episodeId: snapshot.data!.episodeId,
+                                        serverName: snapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : snapshot.data!.sub[index].serverName,
+                                        type: "sub",episodeNumber: episodeNumber,
+                                        episodes: episodes,
+                                        anime: anime,animeModel: animeModel,
+                                        watchHistory: watchHistory,
+                                        isInWatchHistory: isInWatchHistory,
+                                      )
+                                    )
+                                  );
                                 },
                                 title: Text(
                                   snapshot.data!.sub[index].serverName,
@@ -286,5 +310,126 @@ void showPrivacyPolicy(BuildContext context){
           ),
         );
       }
+  );
+}
+
+void showFirstEpisodeModal({
+  required BuildContext context,
+  required Future<Episodes> episodes,
+  required Anime anime,
+  required AnimeModel animeModel,
+  required WatchHistory? watchHistory,
+  required bool isInWatchHistory
+}){
+  showModalBottomSheet(
+    context: context,
+    //backgroundColor: Colors.blue[100],
+    elevation: 10,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    isScrollControlled: true,
+    enableDrag: true,
+    useSafeArea: true,
+    builder: (context){
+      return SizedBox(
+        height: MediaQuery.of(context).size.height*0.35,
+        child: Center(
+          child: FutureBuilder(
+            future: episodes,
+            builder: (context,snapshot){
+              if (snapshot.hasData){
+                Future servers = Future.delayed(Duration(seconds: 2),()=>AniWatchService().getServers(snapshot.data!.episodes[0].episodeId));
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: Text("SERVERS",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: FutureBuilder(
+                          future: servers,
+                          builder: (context,serverSnapshot){
+                            if(serverSnapshot.hasData){
+                              return ListView.builder(
+                                itemCount: serverSnapshot.data!.sub.length,
+                                itemBuilder: (context,index){
+                                  return ListTile(
+                                    onTap: (){
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context)=>BufferPage(
+                                            episodeId: serverSnapshot.data!.episodeId,
+                                            serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,
+                                            type: "sub",
+                                            episodeNumber: 0,
+                                            episodes: snapshot.data!,
+                                            anime: anime,
+                                            animeModel: animeModel,
+                                            watchHistory: null,
+                                            isInWatchHistory: isInWatchHistory,
+                                          )
+                                        )
+                                      );
+                                    },
+                                    title: Text(
+                                      serverSnapshot.data!.sub[index].serverName,
+                                      style: TextStyle(
+                                          color: Theme.of(context).colorScheme.primary.withAlpha(index != unresponsiveServer ? 255 : 150)
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      "Multi Quality",
+                                      style: TextStyle(
+                                          color: Theme.of(context).colorScheme.tertiary.withAlpha(index != unresponsiveServer ? 255 : 150)
+                                      ),
+                                    ),
+                                    trailing: Text(
+                                      index != unresponsiveServer ? "Active" : "Inactive",
+                                      style: TextStyle(
+                                        color: index != unresponsiveServer ? Colors.green : Colors.red,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }else if(serverSnapshot.hasError){
+                              return Center(child: Text("Error loading SERVER list"),);
+                            }else{
+                              return Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 15,),
+                                  Text("Loading Servers ...")
+                                ]
+                              );
+                            }
+                          }
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }else if(snapshot.hasError){
+                return Center(child: Text("Error loading EPISODES list"),);
+              }else{
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 15,),
+                    Text("Loading Episode ...")
+                  ],
+                );
+              }
+            },
+          ),
+        )
+      );
+    }
   );
 }

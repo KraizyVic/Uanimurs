@@ -1,15 +1,9 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uanimurs/Logic/models/ani_watch_model.dart';
-import 'package:uanimurs/UI/custom_widgets/pages_items/anime_details_page_items.dart';
 import 'package:uanimurs/UI/custom_widgets/buttons.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
-import 'package:uanimurs/Database/constants.dart';
 import 'package:video_player/video_player.dart';
-
-import '../../../Logic/bloc/app_cubit.dart';
 import '../../../Logic/models/anime_model.dart';
 
 class PlayerControls extends StatefulWidget {
@@ -32,6 +26,7 @@ class PlayerControls extends StatefulWidget {
   final AnimeModel animeModel;
   final String serverName;
   final String aspectRatioText;
+  final bool isInWatchHistory;
 
   const PlayerControls({
     super.key,
@@ -54,6 +49,7 @@ class PlayerControls extends StatefulWidget {
     required this.episodeNumber,
     required this.serverName,
     required this.aspectRatioText,
+    required this.isInWatchHistory,
   });
 
   @override
@@ -113,6 +109,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                     Spacer(),
                     Text(
                       "${widget.controller.value.size.width.toInt()} x ${widget.controller.value.size.height.toInt()}",
+                      style: TextStyle(color: Colors.white),
                     ),
                     widget.episodes.episodes.length > 1 ? MaterialButton(
                       onPressed: (){
@@ -141,7 +138,15 @@ class _PlayerControlsState extends State<PlayerControls> {
                     widget.episodes.episodes.length > 1 ? buttonWithCenterIcon(
                       isActive: widget.episodes.episodes.length > 1 && widget.episodeIndex > 0 ,
                       Icons.skip_previous,
-                      ()=>widget.episodeIndex > 0 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes.episodes[widget.episodeIndex - 1].episodeId, serverName: widget.serverName, type: "sub", episodeNumber: widget.episodeNumber - 1, episodes: widget.episodes! ,anime: widget.anime,animeModel: widget.animeModel,))) : null,
+                      ()=>widget.episodeIndex > 0 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(
+                        episodeId: widget.episodes.episodes[widget.episodeIndex - 1].episodeId,
+                        serverName: widget.serverName, type: "sub",
+                        episodeNumber: widget.episodeNumber - 1,
+                        episodes: widget.episodes ,
+                        anime: widget.anime,
+                        animeModel: widget.animeModel,
+                        isInWatchHistory: widget.isInWatchHistory,
+                      ))) : null,
                     ):SizedBox(),
                     SizedBox(width: 10,),
                     buttonWithCenterIcon(Icons.replay_10, ()=>widget.controller.seekTo(Duration(seconds: widget.controller.value.position.inSeconds-10))),
@@ -156,7 +161,15 @@ class _PlayerControlsState extends State<PlayerControls> {
                     widget.episodes.episodes.length > 1 ? buttonWithCenterIcon(
                       isActive: widget.episodes.episodes.length > 1 && widget.episodeIndex < widget.episodes.episodes.length - 1,
                       Icons.skip_next,
-                      ()=>widget.episodeIndex < widget.episodes.episodes.length - 1 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: widget.episodes.episodes[widget.episodeIndex + 1].episodeId, serverName: widget.serverName, type: "sub", episodeNumber: widget.episodeNumber + 1, episodes: widget.episodes ,anime: widget.anime,animeModel: widget.animeModel,))) : null,
+                      ()=>widget.episodeIndex < widget.episodes.episodes.length - 1 ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BufferPage(
+                        episodeId: widget.episodes.episodes[widget.episodeIndex + 1].episodeId,
+                        serverName: widget.serverName, type: "sub",
+                        episodeNumber: widget.episodeNumber + 1,
+                        episodes: widget.episodes ,
+                        anime: widget.anime,
+                        animeModel: widget.animeModel,
+                        isInWatchHistory: widget.isInWatchHistory,
+                      ))) : null,
                     ) : SizedBox(),
                     Spacer(),
                     SizedBox(
@@ -228,7 +241,7 @@ class _PlayerControlsState extends State<PlayerControls> {
                     icon: Icon(Icons.subtitles,color: Colors.white,),
                   ),
                   Spacer(),
-                  Text(widget.aspectRatioText),
+                  Text(widget.aspectRatioText,style: TextStyle(color: Colors.white),),
                   IconButton(
                     onPressed: widget.changeAspectRatio,
                     icon: Icon(Icons.aspect_ratio,color: Colors.white,),

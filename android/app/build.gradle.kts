@@ -13,7 +13,14 @@ android {
     defaultConfig {
         multiDexEnabled = true
     }
-
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:/Users/victo/Documents/release-key.jks")
+            storePassword = "exraStorePass"
+            keyAlias = "my-key"
+            keyPassword = "exraStorePass"
+        }
+    }
 
     compileOptions {
         // Flag to enable support for the new language APIs
@@ -37,13 +44,27 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
+    /*buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
+            signingConfig signingConfigs.release
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            //signingConfig = signingConfigs.getByName("debug")
+        }
+    }*/
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false // enable code shrinking
+            isShrinkResources = false // keep this since you want resource shrinking
+            /*proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )*/
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+
 }
 
 dependencies {

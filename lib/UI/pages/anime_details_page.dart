@@ -5,14 +5,13 @@ import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/Logic/models/supabase_models.dart';
 import 'package:uanimurs/Logic/services/anilist_service.dart';
 import 'package:uanimurs/Logic/services/aniwatch_services.dart';
-import 'package:uanimurs/UI/pages/player_page.dart';
 import '../../Logic/global_functions.dart';
 import '../../Logic/models/ani_watch_model.dart';
 import '../../Logic/models/app_model.dart';
 import '../../Logic/models/watch_history.dart';
+import '../../Logic/services/supabase_services.dart';
 import '../custom_widgets/bottom_nav_bar_pages.dart';
 import '../custom_widgets/pages_items/anime_details_page_items.dart';
-import 'buffer_page.dart';
 
 class AnimeDetailsPage extends StatefulWidget {
   final AnimeModel? animeModel;
@@ -35,6 +34,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
   late Future<AnimeModel> anilistAnimeDetails;
   late Future<Episodes> episodes;
   late Anime? bestMatch;
+  late Future<WatchHistory> watchHistory;
 
   @override
   void initState() {
@@ -42,17 +42,15 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
     if(widget.supabaseWatchListModel != null){
       anilistAnimeDetails = AnimeService().getAnimeDetails(widget.supabaseWatchListModel?.anilistId ?? 0);
       searchedAnimes = AniWatchService().searchAnime(widget.supabaseWatchListModel?.animeName.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "");
-      print("Searching for ${widget.supabaseWatchListModel?.animeName.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? ""}");
+      watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.supabaseWatchListModel?.anilistId ?? 0);
     }else if(widget.watchHistory != null){
       anilistAnimeDetails = AnimeService().getAnimeDetails(widget.watchHistory?.anilistId ?? 0);
-      print(widget.watchHistory?.anilistId);
+      watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.watchHistory?.anilistId ?? 0);
     }else{
       anilistAnimeDetails = Future.value(widget.animeModel);
       searchedAnimes = AniWatchService().searchAnime(widget.animeModel?.title.english == "null" ? widget.animeModel?.title.romaji?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "" : widget.animeModel?.title.english!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "");
-      print("Searching For: ${widget.animeModel?.title.english == "null" ? widget.animeModel?.title.romaji?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "" : widget.animeModel?.title.english!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase()}");
-      print(widget.animeModel?.alId);
+      watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.animeModel?.alId ?? 0);
     }
-
     super.initState();
   }
 
@@ -71,9 +69,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
             future: searchedAnimes,
             builder: (context,snapshot) {
               if(snapshot.hasData){
-                print(snapshot.data!.animes.length);
                 bestMatch = findBestAnimeMatch(widget.animeModel?.title.english ?? "" , snapshot.data!.animes);
-                print(bestMatch?.name);
                 return Column(
                   children: [
                     SizedBox(
@@ -85,7 +81,12 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                             searchedAnimeName: bestMatch?.name ?? "",
                             isInServer: false,
                             anime: bestMatch!,
-                            onPressedContinue: (){}
+                            onPressedContinue: (){
+                              //episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
+                            },
+                            watchHistory: widget.watchHistory,
+                            watchHistoryFuture: watchHistory,
+                            appModel: state!,
                           ),
                           Column(
                             children: [
@@ -100,7 +101,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                       ),
                     ),
                     Expanded(
-                      child: detailsPages(pageIndex, widget.animeModel!, bestMatch!),
+                      child: detailsPages(pageIndex, widget.animeModel!, bestMatch!,watchHistory),
                     )
                   ],
                 );
@@ -136,9 +137,11 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                               isInServer: false,
                               anime: bestMatch!,
                               watchHistory: widget.watchHistory,
+                              watchHistoryFuture: watchHistory,
                               onPressedContinue: widget.watchHistory != null ?() {
                                 episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
-                              } : null
+                              } : null,
+                              appModel: state!,
                             ),
                             Column(
                               children: [
@@ -153,7 +156,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                         ),
                       ),
                       Expanded(
-                        child: detailsPages(pageIndex, snapshot.data!, bestMatch!),
+                        child: detailsPages(pageIndex, snapshot.data!, bestMatch!,watchHistory),
                       )
                     ],
                   );
@@ -195,9 +198,11 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                                     isInServer: false,
                                     anime: bestMatch!,
                                     watchHistory: widget.watchHistory,
+                                    watchHistoryFuture: watchHistory,
                                     onPressedContinue: widget.watchHistory != null ?() {
                                       episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
-                                    } : null
+                                    } : null,
+                                    appModel: state!,
                                 ),
                                 Column(
                                   children: [
@@ -212,7 +217,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                             ),
                           ),
                           Expanded(
-                            child: detailsPages(pageIndex, snapshot.data!, bestMatch!),
+                            child: detailsPages(pageIndex, snapshot.data!, bestMatch!,watchHistory),
                           )
                         ],
                       );

@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/Logic/services/supabase_services.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
-import 'package:uanimurs/UI/pages/player_page.dart';
 
 import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/app_model.dart';
@@ -356,7 +354,7 @@ Widget supabaseWatchListTile({
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(anime.animePoster ?? "",fit: BoxFit.cover,width: double.maxFinite,),
+                  child: Image.network(anime.animePoster,fit: BoxFit.cover,width: double.maxFinite,),
                 ),
               ),
               SizedBox(height: 10,),

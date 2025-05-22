@@ -1,6 +1,8 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uanimurs/Logic/bloc/app_cubit.dart' show AccountCubit, AppCubit;
+import 'package:uanimurs/Logic/bloc/app_cubit.dart' show AppCubit;
 import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Logic/models/supabase_models.dart';
 import 'package:uanimurs/Logic/services/authentication_service.dart';
@@ -133,7 +135,7 @@ class MorePage extends StatelessWidget {
                             Spacer(),
                             MaterialButton(
                               onPressed:(){
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => LoginOrSignUpPage()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => AuthPage()));
                               },
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

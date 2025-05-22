@@ -144,7 +144,7 @@ class _HomepageState extends State<Homepage> {
                                         );
                                       }
                                     ) : GestureDetector(
-                                      onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginOrSignUpPage())),
+                                      onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AuthPage())),
                                       child: CircleAvatar(
                                         radius: 25,
                                         backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
@@ -184,7 +184,6 @@ class _HomepageState extends State<Homepage> {
                                    return Center(child: CircularProgressIndicator());
                                  }
                                  if(snapshot.hasError){
-                                   print(snapshot.stackTrace);
                                    return Center(
                                      child: Text("Error: ${snapshot.error}"),
                                    );
@@ -310,7 +309,6 @@ class _HomepageState extends State<Homepage> {
                             }
                           );
                         }else if(snapshot.hasError) {
-                          print(snapshot.stackTrace);
                           return Center(
                             child: ErrorMessage(),
                           );

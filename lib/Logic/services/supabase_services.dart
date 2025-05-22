@@ -99,7 +99,22 @@ class WatchHistoryService{
   final supabaseClient = Supabase.instance.client;
   
   Stream<List<WatchHistory>> fetchWatchHistory(){
-    return Supabase.instance.client.from("watch_history").stream(primaryKey: ['id']).eq("user_id", supabaseClient.auth.currentUser!.id).map((result) => result.map((e) => WatchHistory.fromJson(e)).toList());
+    if(supabaseClient.auth.currentUser?.id != null){
+      return Supabase.instance.client.from("watch_history").stream(primaryKey: ['id']).eq("user_id", supabaseClient.auth.currentUser!.id).map((result) => result.map((e) => WatchHistory.fromJson(e)).toList());
+    }else{
+      return Stream.empty();
+    }
+  }
+
+  Future<WatchHistory> fetchWatchHistoryById(int id) async{
+    if(supabaseClient.auth.currentUser?.id != null){
+      final result = await supabaseClient.from("watch_history").select().eq("anilist_id", id).eq("user_id", supabaseClient.auth.currentUser!.id).single();
+      print(result.length);
+      return WatchHistory.fromJson(result);
+    }else{
+      return WatchHistory();
+    }
+
   }
 
   void addWatchHistory({required WatchHistory watchHistory}) async{

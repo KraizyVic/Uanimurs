@@ -23,6 +23,8 @@ class BannerDetails extends StatefulWidget {
   final String searchedAnimeName;
   final VoidCallback? onPressedContinue;
   final WatchHistory? watchHistory;
+  final Future<WatchHistory> watchHistoryFuture;
+  final AppModel appModel;
   const BannerDetails({
     super.key,
     required this.animeModel,
@@ -30,7 +32,9 @@ class BannerDetails extends StatefulWidget {
     required this.isInServer,
     required this.searchedAnimeName,
     this.onPressedContinue,
-    this.watchHistory
+    this.watchHistory,
+    required this.watchHistoryFuture,
+    required this.appModel
   });
 
   @override
@@ -40,12 +44,15 @@ class BannerDetails extends StatefulWidget {
 class _BannerDetailsState extends State<BannerDetails> {
   late Future<Servers> servers;
   late Future<Episodes> episodes;
+  late Future<WatchHistory> watchHistory;
+
 
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.animeModel.alId);
 
   }
   @override
@@ -104,22 +111,22 @@ class _BannerDetailsState extends State<BannerDetails> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              widget.watchHistory != null ? Expanded(
+                              Supabase.instance.client.auth.currentSession == null && widget.appModel.watchHistory.any((element) => element.anilistId == widget.animeModel.alId) ? Expanded(
                                 child: customTextButton(
                                   context: context,
                                   onTap: (){
-                                    episodes = AniWatchService().getEpisodes(widget.watchHistory?.anime?.aniwatchId ?? "");
+                                    episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
                                     showEpisodeModal(
                                         context: context,
                                         episodes: episodes,
                                         anime: widget.anime,
                                         animeModel: widget.animeModel,
-                                        watchHistory: widget.watchHistory
+                                        watchHistory: BlocProvider.of<AppCubit>(context).state?.watchHistory.firstWhere((element) => element.anilistId == widget.animeModel.alId),
                                     );
                                   },
                                   buttonName: "Continue"
                                 ),
-                              ): StreamBuilder(
+                              ) : StreamBuilder(
                                 stream: Supabase.instance.client.from("watch_history").stream(primaryKey: ["id"]).map((event) => event.map((e) => WatchHistory.fromJson(e)).where((anime) => anime.anilistId == widget.animeModel.alId).toList()),
                                 builder: (context, snapshot) {
                                   if(snapshot.connectionState == ConnectionState.waiting){
@@ -132,7 +139,7 @@ class _BannerDetailsState extends State<BannerDetails> {
                                             context: context,
                                             isFilled: false,
                                             onTap: () {
-                                              print(snapshot.data!.first.image);
+                                              //print(snapshot.data!.first.image);
                                               episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
                                               showEpisodeModal(
                                                 context: context,
@@ -191,13 +198,13 @@ class _BannerDetailsState extends State<BannerDetails> {
                                         }
                                       );
                                     }
-                                    final isInLocalList = state.userList.any((item) => item.alId == widget.animeModel.alId) ?? false;
+                                    final isInLocalList = state.userList.any((item) => item.alId == widget.animeModel.alId);
                                     return customTextButton(
                                       context: context,
                                       isFilled: isInLocalList,
                                       onTap: () {
                                         if (isInLocalList) {
-                                          context.read<AppCubit>().removeFromWatchList(state!.userList.firstWhere((item)=>item.alId == widget.animeModel.alId));
+                                          context.read<AppCubit>().removeFromWatchList(state.userList.firstWhere((item)=>item.alId == widget.animeModel.alId));
                                         } else {
                                           context.read<AppCubit>().addToWatchList(widget.animeModel);
                                         }
@@ -209,109 +216,48 @@ class _BannerDetailsState extends State<BannerDetails> {
                               ),
                               SizedBox(width: 6,),
                               Expanded(
-                                child: customTextButton(
-                                  context: context,
-                                  onTap: (){
-                                    episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
-                                    showModalBottomSheet(
-                                      context: context,
-                                      //backgroundColor: Colors.blue[100],
-                                      elevation: 10,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                                      ),
-                                      isScrollControlled: true,
-                                      enableDrag: true,
-                                      useSafeArea: true,
-                                      builder: (context){
-                                        return SizedBox(
-                                          height: MediaQuery.of(context).size.height*0.35,
-                                          child: Center(
-                                            child: FutureBuilder(
-                                              future: episodes,
-                                              builder: (context,snapshot){
-                                                if (snapshot.hasData){
-                                                  servers = Future.delayed(Duration(seconds: 2),()=>AniWatchService().getServers(snapshot.data!.episodes[0].episodeId));
-                                                  return Column(
-                                                  children: [
-                                                      Padding(
-                                                        padding: const EdgeInsets.symmetric(vertical: 15),
-                                                        child: Text("SERVERS",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
-                                                      ),
-                                                      Expanded(
-                                                        child: Center(
-                                                          child: FutureBuilder(
-                                                            future: servers,
-                                                              builder: (context,serverSnapshot){
-                                                                if(serverSnapshot.hasData){
-                                                                  return ListView.builder(
-                                                                    itemCount: serverSnapshot.data!.sub.length,
-                                                                    itemBuilder: (context,index){
-                                                                      return ListTile(
-                                                                        onTap: (){
-                                                                          Navigator.pop(context);
-                                                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: 0,episodes: snapshot.data!,anime: widget.anime, animeModel: widget.animeModel,)));
-                                                                        },
-                                                                        title: Text(
-                                                                          serverSnapshot.data!.sub[index].serverName,
-                                                                          style: TextStyle(
-                                                                              color: Theme.of(context).colorScheme.primary.withAlpha(index != unresponsiveServer ? 255 : 150)
-                                                                          ),
-                                                                        ),
-                                                                        subtitle: Text(
-                                                                          "Multi Quality",
-                                                                          style: TextStyle(
-                                                                              color: Theme.of(context).colorScheme.tertiary.withAlpha(index != unresponsiveServer ? 255 : 150)
-                                                                          ),
-                                                                        ),
-                                                                        trailing: Text(
-                                                                          index != unresponsiveServer ? "Active" : "Inactive",
-                                                                          style: TextStyle(
-                                                                            color: index != unresponsiveServer ? Colors.green : Colors.red,
-                                                                          ),
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                }else if(serverSnapshot.hasError){
-                                                                  return Center(child: Text("Error loading SERVER list"),);
-                                                                }else{
-                                                                  return Column(
-                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                    children: [
-                                                                      CircularProgressIndicator(),
-                                                                      SizedBox(height: 15,),
-                                                                      Text("Loading Servers ...")
-                                                                    ]
-                                                                  );
-                                                                }
-                                                              }
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                    );
-                                                }else if(snapshot.hasError){
-                                                  return Center(child: Text("Error loading EPISODES list"),);
-                                                }else{
-                                                  return Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      CircularProgressIndicator(),
-                                                      SizedBox(height: 15,),
-                                                      Text("Loading Episode ...")
-                                                    ],
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                          )
-                                        );
-                                      }
-                                    );
-                                  },
-                                  buttonName: "Play",
-                                  isFilled: true,
+                                child: FutureBuilder(
+                                  future: widget.watchHistoryFuture,
+                                  builder: (context, asyncSnapshot) {
+                                    if(asyncSnapshot.connectionState == ConnectionState.waiting){
+                                      return Container();
+                                    }else if(asyncSnapshot.hasData){
+                                      return customTextButton(
+                                        context: context,
+                                        onTap: (){
+                                          episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
+                                          showFirstEpisodeModal(
+                                            context: context,
+                                            episodes: episodes,
+                                            anime: widget.anime,
+                                            animeModel: widget.animeModel,
+                                            watchHistory: null,
+                                            isInWatchHistory: true,
+                                          );
+                                        },
+                                        buttonName: "Play",
+                                        isFilled: true,
+                                      );
+                                    }else{
+                                      print(asyncSnapshot.error);
+                                      return customTextButton(
+                                        context: context,
+                                        onTap: (){
+                                          episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
+                                          showFirstEpisodeModal(
+                                            context: context,
+                                            episodes: episodes,
+                                            anime: widget.anime,
+                                            animeModel: widget.animeModel,
+                                            watchHistory: null,
+                                            isInWatchHistory: false,
+                                          );
+                                        },
+                                        buttonName: "Play",
+                                        isFilled: true,
+                                      );
+                                    }
+                                  }
                                 ),
                               ),
                             ],
@@ -472,8 +418,18 @@ class EpisodesPage extends StatefulWidget {
   final String searchedAnimeName;
   final Anime anime;
   final AnimeModel animeModel;
+  final WatchHistory? watchHistory;
+  final Future<WatchHistory> watchHistoryFuture;
 
-  const EpisodesPage({super.key, required this.animeId, required this.searchedAnimeName, required this.anime, required this.animeModel});
+  const EpisodesPage({
+    super.key,
+    required this.animeId,
+    required this.searchedAnimeName,
+    required this.anime,
+    required this.animeModel,
+    this.watchHistory,
+    required this.watchHistoryFuture,
+  });
 
   @override
   State<EpisodesPage> createState() => _EpisodesPageState();
@@ -500,20 +456,65 @@ class _EpisodesPageState extends State<EpisodesPage> {
             padding: const EdgeInsets.symmetric(
               horizontal: 10
             ),
-            child: ListView.builder(
-              itemCount: snapshot.data!.episodes.length,
-              itemBuilder: (context , index){
-                return ListTile(
-                  onTap: (){
-                    servers = AniWatchService().getServers(snapshot.data!.episodes[index].episodeId);
-                    showMyBottomSheet(context, servers,index,snapshot.data!,widget.anime,widget.animeModel);
-                  },
-                  //tileColor: Colors.blue,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  leading: Text("${index+1}",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
-                  title: Text(snapshot.data!.episodes[index].name),
-                  subtitle: Text(snapshot.data!.episodes[index].filler == true ? "Filler" : "Episode")
-                );
+            child: FutureBuilder(
+              future: widget.watchHistoryFuture,
+              builder: (context, historySnapshot){
+                if(historySnapshot.connectionState == ConnectionState.waiting){
+                  return Center(child: CircularProgressIndicator(),);
+                }
+                if(historySnapshot.hasData){
+                  return ListView.builder(
+                    itemCount: snapshot.data!.episodes.length,
+                    itemBuilder: (context , index){
+                      return ListTile(
+                        onTap: (){
+                          servers = AniWatchService().getServers(snapshot.data!.episodes[index].episodeId);
+                          showMyBottomSheet(
+                            context: context,
+                            servers: servers,
+                            episodeNumber: index,
+                            episodes: snapshot.data!,
+                            anime: widget.anime,
+                            animeModel: widget.animeModel,
+                            watchHistory: historySnapshot.data,
+                            isInWatchHistory: true,
+                          );
+                        },
+                        //tileColor: Colors.blue,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        leading: Text("${index+1}",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                        title: Text(snapshot.data!.episodes[index].name),
+                        subtitle: Text(snapshot.data!.episodes[index].filler == true ? "Filler" : "Episode")
+                      );
+                    }
+                  );
+                }else{
+                  return ListView.builder(
+                      itemCount: snapshot.data!.episodes.length,
+                      itemBuilder: (context , index){
+                        return ListTile(
+                            onTap: (){
+                              servers = AniWatchService().getServers(snapshot.data!.episodes[index].episodeId);
+                              showMyBottomSheet(
+                                context: context,
+                                servers: servers,
+                                episodeNumber: index,
+                                episodes: snapshot.data!,
+                                anime: widget.anime,
+                                animeModel: widget.animeModel,
+                                watchHistory: widget.watchHistory,
+                                isInWatchHistory: false,
+                              );
+                            },
+                            //tileColor: Colors.blue,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            leading: Text("${index+1}",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                            title: Text(snapshot.data!.episodes[index].name),
+                            subtitle: Text(snapshot.data!.episodes[index].filler == true ? "Filler" : "Episode")
+                        );
+                      }
+                  );
+                }
               }
             ),
           );

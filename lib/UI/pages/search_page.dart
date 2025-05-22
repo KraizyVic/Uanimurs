@@ -19,7 +19,6 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final AnimeService _animeService = AnimeService();
   late Future<List<AnimeModel>> _searchResults = Future.value([]);
-  final TextEditingController _searchController = TextEditingController();
 
   String _searchTerm = '';
 

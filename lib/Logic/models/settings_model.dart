@@ -1,7 +1,5 @@
 import 'package:isar/isar.dart';
 
-import '../../Database/constants.dart';
-
 part 'settings_model.g.dart';
 
 @embedded
@@ -13,16 +11,11 @@ class SettingsModel {
 
   // Constructor without nullable parameters
   SettingsModel({
-    AppearanceSettings appearance = const AppearanceSettings(),
-    GeneralSettings layout = const GeneralSettings(),
-    SubtitleSettings subtitles = const SubtitleSettings(),
-    PlayerSettings player = const PlayerSettings(),
-  }) {
-    this.appearance = appearance;
-    this.layout = layout;
-    this.subtitles = subtitles;
-    this.player = player;
-  }
+    this.appearance = const AppearanceSettings(),
+    this.layout = const GeneralSettings(),
+    this.subtitles = const SubtitleSettings(),
+    this.player = const PlayerSettings(),
+  });
 
   // CopyWith method for updating settings
   SettingsModel copyWith({

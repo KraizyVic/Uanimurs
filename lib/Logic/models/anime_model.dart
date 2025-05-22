@@ -55,7 +55,7 @@ class AnimeModel {
   }){
     return AnimeModel(
       alId: alId ?? this.alId,
-      malId: malId ?? this.malId,
+      malId: malId,
       startDate: startDate,
       endDate: endDate,
       season: season,

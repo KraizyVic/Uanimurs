@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uanimurs/Logic/models/github_model.dart';
 
-import '../../../Logic/bloc/app_cubit.dart';
 import '../../../Logic/global_functions.dart';
 import '../../../Logic/services/github_service.dart';
 import '../../../Logic/services/update_service.dart';

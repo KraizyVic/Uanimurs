@@ -35,7 +35,6 @@ class AnimeService {
     }
 
     final List<dynamic> airingAnimes = result.data?['Page']['media'] ?? [];
-    print(airingAnimes.length);
     return airingAnimes.map((json) => AnimeModel.fromJson(json)).toList();
   }
 
@@ -56,7 +55,6 @@ class AnimeService {
     }
 
     final List<dynamic> airingAnimes = result.data?['Page']['media'] ?? [];
-    print(airingAnimes.length);
     return airingAnimes.map((json) => AnimeModel.fromJson(json)).toList();
   }
 
@@ -77,7 +75,6 @@ class AnimeService {
     }
 
     final List<dynamic> airingAnimes = result.data?['Page']['media'] ?? [];
-    print(airingAnimes.length);
     return airingAnimes.map((json) => AnimeModel.fromJson(json)).toList();
   }
 
@@ -98,7 +95,6 @@ class AnimeService {
     }
 
     final List<dynamic> airingAnimes = result.data?['Page']['media'] ?? [];
-    print(airingAnimes.length);
     return airingAnimes.map((json) => AnimeModel.fromJson(json)).toList();
   }
 

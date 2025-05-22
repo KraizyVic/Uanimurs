@@ -9,6 +9,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uanimurs/Logic/models/app_model.dart';
 import 'package:uanimurs/Database/secrets.dart';
 import 'package:uanimurs/Logic/models/watch_history.dart';
+import 'package:uanimurs/Logic/services/http_overrides.dart';
+import 'package:uanimurs/UI/pages/welcome_page.dart';
 
 import 'Logic/bloc/app_cubit.dart';
 import 'Logic/models/anime_model.dart';
@@ -17,6 +19,7 @@ import 'UI/custom_widgets/bottom_nav_bar_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = MyHttpOverrides();
   Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
@@ -100,7 +103,7 @@ class _MyAppState extends State<MyApp> {
               statusBarColor: Colors.transparent,
               systemNavigationBarColor: Colors.transparent,
             ),
-            child: AuthenticationGate(),
+            child: state.isFirstTime ? WelcomePage() : AuthenticationGate(),
           ),
           debugShowCheckedModeBanner: false,
         );
@@ -200,41 +203,47 @@ class _MainPageState extends State<MainPage> {
               debugPrint("Screen popped with result: $result");
             }
           },
-          child: Scaffold(
-            bottomNavigationBar: BottomNavigationBar(
-              elevation: 0,
-              type: BottomNavigationBarType.fixed,
-              fixedColor: Theme.of(context).colorScheme.primary,
-              currentIndex: pageIndex,
-              onTap: changePage,
-              items: [
-                BottomNavigationBarItem(
-                  icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    pageIndex == 1 ? Icons.search : Icons.search_outlined,
-                  ),
-                  label: 'Search',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    pageIndex == 2 ? Icons.folder : Icons.folder_outlined,
-                  ),
-                  label: 'My list',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    pageIndex == 3
-                        ? Icons.more_horiz
-                        : Icons.more_horiz_outlined,
-                  ),
-                  label: 'More',
-                ),
-              ],
+          child: AnnotatedRegion(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: Colors.transparent,
             ),
-            body: mainPages[pageIndex],
+            child: Scaffold(
+              bottomNavigationBar: BottomNavigationBar(
+                elevation: 0,
+                type: BottomNavigationBarType.fixed,
+                fixedColor: Theme.of(context).colorScheme.primary,
+                currentIndex: pageIndex,
+                onTap: changePage,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Icon(pageIndex == 0 ? Icons.home : Icons.home_outlined),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      pageIndex == 1 ? Icons.search : Icons.search_outlined,
+                    ),
+                    label: 'Search',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      pageIndex == 2 ? Icons.folder : Icons.folder_outlined,
+                    ),
+                    label: 'My list',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      pageIndex == 3
+                          ? Icons.more_horiz
+                          : Icons.more_horiz_outlined,
+                    ),
+                    label: 'More',
+                  ),
+                ],
+              ),
+              body: mainPages[pageIndex],
+            ),
           ),
         );
       },

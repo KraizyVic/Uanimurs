@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -16,7 +15,43 @@ class UpdateService {
     final currentVersion = info.version;
 
     const githubApiUrl = 'https://api.github.com/repos/KraizyVic/Uanimurs/releases/latest';
+    if(!context.mounted){
+      return ;
+    }
+    isManualCheck ? showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context)=>AlertDialog(
+      backgroundColor: Colors.transparent,
+      content: Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(10)
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Checking for updates...",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 20,),
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+          ],
+        ),
+      ),
+    )
+    ) : null;
     final response = await http.get(Uri.parse(githubApiUrl));
+    isManualCheck ? Navigator.pop(context) : null;
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -44,7 +79,6 @@ class UpdateService {
         );
       }
     } else {
-      print('Failed to fetch latest release');
     }
   }
 
@@ -112,13 +146,11 @@ class UpdateService {
 
     await _showAppNotification("Download started", "Download begun and is being handled by the system download manager. Please wait...");
     try {
-      print("Starting download...");
       await _platform.invokeMethod('startDownload', {
         'url': url,
         'fileName': fileName,
       });
     } catch (e) {
-      print("DownloadManager error: $e");
       await _showAppNotification("Download Failed", "Could not start system download manager.");
     }
   }
@@ -153,17 +185,6 @@ class UpdateService {
     );
   }
 
-  static Future<bool> _checkPermissions() async {
-    if (Platform.isAndroid) {
-      // For Android 10+ (API level 29+)
-      if (await Permission.requestInstallPackages.status.isGranted) {
-        return true;
-      }
-      final status = await Permission.requestInstallPackages.request();
-      return status.isGranted;
-    }
-    return true; // For other platforms
-  }
 }
 
 class VersionHelper {

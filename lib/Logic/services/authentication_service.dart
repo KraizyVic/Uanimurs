@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:uanimurs/UI/custom_widgets/widgets.dart';
 import 'package:uanimurs/main.dart';
 
 import '../bloc/app_cubit.dart';
@@ -13,27 +14,60 @@ class AuthenticationService {
   Future<AuthResponse> loginWithPassword({
     required BuildContext context,
     required String email,
-    required String password
+    required String password,
+    bool isFromWelcomePage = false
   }) async {
     try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context)=>AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(10)
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Logging in...",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+                SizedBox(height: 20,),
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ],
+            ),
+          ),
+        )
+      );
       final response = await _supabaseClient.auth.signInWithPassword(email: email, password: password);
       if(!context.mounted){
         return response;
       }
+      Navigator.pop(context);
+      Future.delayed(Duration(seconds: 1));
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainPage()));
       BlocProvider.of<AppCubit>(context).authState(isLoggedIn: true);
+      isFromWelcomePage ? BlocProvider.of<AppCubit>(context).setNotFirstTime() : null;
+
       return response;
     } on AuthException catch (e) {
-      // Handle different authentication errors
-      // For example, you can check e.message or e.statusCode
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message))); // It's better to use a proper logger in a real app
-      // You might want to re-throw the exception or return a custom error response
-      // depending on how you want to handle this in your UI.
-      // For now, let's re-throw it so the caller can handle it.
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        snackBar(context: context, message: e.message.toString(),isError: true)
+      ); // It's better to use a proper logger in a real app
       rethrow;
     } catch (e) {
-      // Handle any other unexpected errors
-      print('An unexpected error occurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An unexpected error occurred: $e')));
       rethrow; // Or handle it as a generic error
     }
   }
@@ -91,17 +125,16 @@ class AuthenticationService {
         }
 
       }catch(e){
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to add user")));
+        if(context.mounted){
+          ScaffoldMessenger.of(context).showSnackBar(snackBar(context: context, message: "Failed to add user to database",isError: true));
+        }
       }
-      print("User Id = ${response.user!.id}");
       return response;
 
     } on AuthException catch (e) {
-      print('Sign Up Error: ${e.message}');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar(context: context, message: e.message.toString(),isError: true));
       rethrow;
     } catch (e) {
-      print('An unexpected sign up error occurred: $e');
       rethrow;
     }
   }
@@ -128,21 +161,83 @@ class AuthenticationService {
   }
 
   // Logging out
-  Future<void> logout(BuildContext logoutContext) async {
-    try {
-      final response = await _supabaseClient.auth.signOut();
-      //Navigator.pushReplacement(logoutContext, MaterialPageRoute(builder: (context)=>LoginSignupPage()));
-      if(!logoutContext.mounted){
-        return;
+  void logout(BuildContext logoutContext){
+    showDialog(
+      context: logoutContext,
+      builder: (context){
+        return AlertDialog(
+          title: Text("Log out",style: TextStyle(color: Theme.of(context).colorScheme.primary),),
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Are you sure you want to log out?"),
+              SizedBox(height: 10,),
+              Row(
+                children: [
+                  Spacer(),
+                  TextButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    child: Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () async{
+                      Navigator.pop(context);
+                      try {
+                        showDialog(
+                            context: logoutContext,
+                            barrierDismissible: false,
+                            builder: (context)=>AlertDialog(
+                              backgroundColor: Colors.transparent,
+                              content: Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(10)
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Logging out...",
+                                      style: TextStyle(
+                                          color: Theme.of(context).colorScheme.tertiary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                    SizedBox(height: 20,),
+                                    Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                        );
+                        await GoogleSignIn().signOut();
+                        final response = await _supabaseClient.auth.signOut();
+                        if(!logoutContext.mounted){
+                          return;
+                        }
+                        Future.delayed(Duration(seconds: 1));
+                        Navigator.pop(logoutContext);
+                        BlocProvider.of<AppCubit>(logoutContext).authState(isLoggedIn: false);
+                        return response;
+                      } catch (e) {
+                        rethrow;
+                      }
+                    },
+                    child: Text("Logout"),
+                  ),
+                ]
+              ),
+            ],
+          )
+        );
       }
-      BlocProvider.of<AppCubit>(logoutContext).authState(isLoggedIn: false);;
-      return response;
-    } on AuthException catch (e) {
-      print('Logout Error: ${e.message}');
-      rethrow;
-    } catch (e) {
-      print('An unexpected logout error occurred: $e');
-      rethrow;
-    }
+    );
   }
 }

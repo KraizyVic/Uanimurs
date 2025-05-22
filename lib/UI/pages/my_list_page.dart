@@ -99,7 +99,7 @@ Widget onlineList({
               context: context,
               buttonName: "Login",
               onTap: (){
-                Navigator.push(context,MaterialPageRoute(builder: (context)=>LoginOrSignUpPage()));
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>AuthPage()));
               },
             ),
           ),
@@ -149,6 +149,11 @@ Widget localList(){
   return BlocBuilder<AppCubit, AppModel?>(
     builder: (context, state) {
       final list = state!.userList.toList();
+      if(list.isEmpty){
+        return Center(
+          child: Text("Your local list is empty"),
+        );
+      }
       return GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,

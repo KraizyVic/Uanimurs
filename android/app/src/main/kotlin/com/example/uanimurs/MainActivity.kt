@@ -48,7 +48,7 @@ class MainActivity : FlutterActivity() {
         val request = DownloadManager.Request(Uri.parse(url))
             .setTitle("Downloading Update")
             .setDescription("Please wait…")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
             .setAllowedOverMetered(true)
             .setAllowedOverRoaming(true)
@@ -111,7 +111,7 @@ class MainActivity : FlutterActivity() {
         )
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Update Downloaded ✅")
+            .setContentTitle("Update Downloaded 😍")
             .setContentText("Tap to install the update.")
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentIntent(pendingIntent)

@@ -274,7 +274,7 @@ Widget loginTile({
               Spacer(),
               MaterialButton(
                 onPressed:(){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LoginOrSignUpPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => AuthPage()));
                 },
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -294,7 +294,8 @@ void showEpisodeModal({
   required Future<Episodes> episodes,
   required Anime anime,
   required AnimeModel animeModel,
-  required WatchHistory? watchHistory
+  required WatchHistory? watchHistory,
+
 }){
   showModalBottomSheet(
       context: context,
@@ -324,53 +325,64 @@ void showEpisodeModal({
                         Expanded(
                           child: Center(
                             child: FutureBuilder(
-                                future: servers,
-                                builder: (context,serverSnapshot){
-                                  if(serverSnapshot.hasData){
-                                    return ListView.builder(
-                                      itemCount: serverSnapshot.data!.sub.length,
-                                      itemBuilder: (context,index){
-                                        int watchedEpisode = watchHistory!.watchingEpisode! - 1;
-                                        return ListTile(
-                                          onTap: (){
-                                            Navigator.pop(context);
-                                            Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(episodeId: serverSnapshot.data!.episodeId, serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,type: "sub",episodeNumber: watchedEpisode ,episodes: snapshot.data!,anime: anime, animeModel: animeModel,watchHistory: watchHistory,)));
-                                          },
-                                          title: Text(
-                                            serverSnapshot.data!.sub[index].serverName,
+                              future: servers,
+                              builder: (context,serverSnapshot){
+                                if(serverSnapshot.hasData){
+                                  return ListView.builder(
+                                    itemCount: serverSnapshot.data!.sub.length,
+                                    itemBuilder: (context,index){
+                                      int watchedEpisode = watchHistory!.watchingEpisode! - 1;
+                                      return ListTile(
+                                        onTap: (){
+                                          Navigator.pop(context);
+                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>BufferPage(
+                                            episodeId: serverSnapshot.data!.episodeId,
+                                            serverName: serverSnapshot.data!.sub[index].serverName=="vidsrc" ? "vidstreaming" : serverSnapshot.data!.sub[index].serverName,
+                                            type: "sub",
+                                            episodeNumber: watchedEpisode ,
+                                            episodes: snapshot.data!,
+                                            anime: anime,
+                                            animeModel: animeModel,
+                                            watchHistory: watchHistory,
+                                            isInWatchHistory: true,
+                                            isContinuePress: true,
+                                          )));
+                                        },
+                                        title: Text(
+                                          serverSnapshot.data!.sub[index].serverName,
+                                          style: TextStyle(
+                                            color: Theme.of(context).colorScheme.primary.withAlpha(index != unresponsiveServer ? 255 : 150),
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                            "Multi Quality",
                                             style: TextStyle(
-                                              color: Theme.of(context).colorScheme.primary.withAlpha(index != unresponsiveServer ? 255 : 150),
-                                            ),
+                                                color: Theme.of(context).colorScheme.tertiary.withAlpha(index != unresponsiveServer ? 255 : 150)
+                                            )
+                                        ),
+                                        trailing: Text(
+                                          index != unresponsiveServer ? "Active" : "Inactive",
+                                          style: TextStyle(
+                                            color: index != unresponsiveServer ? Colors.green : Colors.red,
                                           ),
-                                          subtitle: Text(
-                                              "Multi Quality",
-                                              style: TextStyle(
-                                                  color: Theme.of(context).colorScheme.tertiary.withAlpha(index != unresponsiveServer ? 255 : 150)
-                                              )
-                                          ),
-                                          trailing: Text(
-                                            index != unresponsiveServer ? "Active" : "Inactive",
-                                            style: TextStyle(
-                                              color: index != unresponsiveServer ? Colors.green : Colors.red,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }else if(serverSnapshot.hasError){
-                                    print(snapshot.stackTrace);
-                                    return Center(child: Text("Error loading SERVER list"),);
-                                  }else{
-                                    return Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(),
-                                          SizedBox(height: 15,),
-                                          Text("Loading Servers ...")
-                                        ]
-                                    );
-                                  }
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }else if(serverSnapshot.hasError){
+                                  print(snapshot.stackTrace);
+                                  return Center(child: Text("Error loading SERVER list"),);
+                                }else{
+                                  return Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        CircularProgressIndicator(),
+                                        SizedBox(height: 15,),
+                                        Text("Loading Servers ...")
+                                      ]
+                                  );
                                 }
+                              }
                             ),
                           ),
                         ),
@@ -393,5 +405,18 @@ void showEpisodeModal({
             )
         );
       }
+  );
+}
+
+SnackBar snackBar({
+  required BuildContext context,
+  required String message,
+  bool? isError,
+}){
+  return SnackBar(
+    content: Center(child: Text(message)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+    behavior: SnackBarBehavior.floating,
+    backgroundColor: isError ?? false ? Colors.red : Theme.of(context).colorScheme.primary,
   );
 }

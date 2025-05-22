@@ -3,14 +3,15 @@ import 'package:flutter/services.dart';
 
 import '../custom_widgets/pages_items/auth_page_items.dart';
 
-class LoginOrSignUpPage extends StatefulWidget {
-  const LoginOrSignUpPage({super.key});
+class AuthPage extends StatefulWidget {
+  final bool isFromWelcomeScreens;
+  const AuthPage({super.key,this.isFromWelcomeScreens = false});
 
   @override
-  State<LoginOrSignUpPage> createState() => _LoginOrSignUpPageState();
+  State<AuthPage> createState() => _AuthPageState();
 }
 
-class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
+class _AuthPageState extends State<AuthPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController loginPasswordController = TextEditingController();
   final TextEditingController userNameController = TextEditingController();
@@ -21,7 +22,6 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -29,30 +29,13 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
         ),
         child: Stack(
           children: [
-            /*Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Image.asset("lib/Database/assets/nezuko and tanjiro.png",fit: BoxFit.cover,width: double.infinity,height: double.infinity,),
-                      Container(
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Theme.of(context).colorScheme.surface.withAlpha(100),
-                                  Theme.of(context).colorScheme.surface,
-                                ]
-                            )
-                        ),
-                      ),
-                    ],
-                  )
-                ),
-                SizedBox(height: 100,),
-              ],
-            ),*/
+            Image.asset(
+              "lib/Database/assets/nezuko and tanjiro.png",
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              opacity: AlwaysStoppedAnimation(.5),
+            ),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -80,6 +63,7 @@ class _LoginOrSignUpPageState extends State<LoginOrSignUpPage> {
                         emailController: emailController,
                         passwordController: loginPasswordController,
                         pageController: pageController,
+                        isFromWelcomePage: widget.isFromWelcomeScreens
                       ),
                       signUpScreen(
                         context: context,
