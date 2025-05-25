@@ -6,9 +6,18 @@ import 'package:http/http.dart' as http;
 class AniWatchService{
   String baseUrl = "https://kraizy-api-aniwatch-instance.vercel.app/aniwatch";
 
+  Future<void> pingApp() async{
+    final response = await http.get(Uri.parse("$baseUrl"));
+    if(response.statusCode == 200){
+      return;
+    }else{
+      throw Exception("Failed to ping app");
+    }
+  }
+
   // Search for anime
   Future<SearchedAnimes> searchAnime(String query) async {
-    final response = await http.get(Uri.parse("$baseUrl/search?keyword=${query}page=1"));
+    final response = await http.get(Uri.parse("$baseUrl/search?keyword=${query} page=1"));
     if(response.statusCode == 200){
       return SearchedAnimes.fromJson(json.decode(response.body));
     }else{

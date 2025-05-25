@@ -119,8 +119,8 @@ class _UpdateAccountModalState extends State<UpdateAccountModal> {
                             child: Center(
                               child: Stack(
                                 children: [
-                                  ?pfps[index] == null ? Icon(Icons.person,size: 50,): null,
-                                  ?selectedPfpIndex == index ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary,size: 50,) : null,
+                                  pfps[index] == null ? Icon(Icons.person,size: 50,): SizedBox(),
+                                  selectedPfpIndex == index ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary,size: 50,) : SizedBox(),
                                 ],
                               ),
                             ),
@@ -370,7 +370,6 @@ void showEpisodeModal({
                                     },
                                   );
                                 }else if(serverSnapshot.hasError){
-                                  print(snapshot.stackTrace);
                                   return Center(child: Text("Error loading SERVER list"),);
                                 }else{
                                   return Column(
@@ -412,11 +411,18 @@ SnackBar snackBar({
   required BuildContext context,
   required String message,
   bool? isError,
+  int duration = 1000,
+  double? width,
+  Color? color,
+  EdgeInsets? padding
 }){
   return SnackBar(
+    padding: padding ?? EdgeInsets.all(15),
+    width: width,
     content: Center(child: Text(message)),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
     behavior: SnackBarBehavior.floating,
-    backgroundColor: isError ?? false ? Colors.red : Theme.of(context).colorScheme.primary,
+    duration: Duration(milliseconds: duration),
+    backgroundColor: isError ?? false ? color ?? Colors.red : color ?? Theme.of(context).colorScheme.primary,
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uanimurs/UI/pages/more_page_pages/player_page_settings.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../pages/more_page_pages/about_page.dart';
@@ -44,7 +45,7 @@ class FunctionalSettings extends StatelessWidget {
             title: Text("Player"),
             subtitle: Text("Customize player experience"),
             onTap: () {
-              //Navigator.pushNamed(context, "/appearance");
+              Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerPageSettings()));
             },
           ),
           ListTile(

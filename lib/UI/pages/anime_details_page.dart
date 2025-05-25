@@ -17,11 +17,15 @@ class AnimeDetailsPage extends StatefulWidget {
   final AnimeModel? animeModel;
   final WatchHistory? watchHistory;
   final SupabaseWatchListModel? supabaseWatchListModel;
+  final Anime? preferedAnime;
+  final SearchedAnimes? searchedAnimes;
   const AnimeDetailsPage({
     super.key,
     required this.animeModel,
     this.watchHistory,
     this.supabaseWatchListModel,
+    this.preferedAnime,
+    this.searchedAnimes
   });
 
   @override
@@ -33,12 +37,15 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
   late Future<SearchedAnimes> searchedAnimes;
   late Future<AnimeModel> anilistAnimeDetails;
   late Future<Episodes> episodes;
-  late Anime? bestMatch;
+  Anime? bestMatch;
   late Future<WatchHistory> watchHistory;
+  late TextEditingController manualSearchController;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     // TODO: implement initState
+    super.initState();
     if(widget.supabaseWatchListModel != null){
       anilistAnimeDetails = AnimeService().getAnimeDetails(widget.supabaseWatchListModel?.anilistId ?? 0);
       searchedAnimes = AniWatchService().searchAnime(widget.supabaseWatchListModel?.animeName.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "");
@@ -51,7 +58,8 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       searchedAnimes = AniWatchService().searchAnime(widget.animeModel?.title.english == "null" ? widget.animeModel?.title.romaji?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "" : widget.animeModel?.title.english!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "");
       watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.animeModel?.alId ?? 0);
     }
-    super.initState();
+    manualSearchController = TextEditingController(text: widget.animeModel?.title.english == "null" ? widget.animeModel?.title.romaji?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "" : widget.animeModel?.title.english!.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ').replaceAll(" ", "-").toLowerCase() ?? "");
+
   }
 
   int pageIndex = 0;
@@ -60,12 +68,132 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       pageIndex = index;
     });
   }
+
+  Widget manualSelect({
+    required BuildContext context,
+    required SearchedAnimes? searchedAnimes,
+    required AnimeModel animeModel,
+    required Function(Anime) onSelect, // pass the selected anime back
+    required PageController pageController,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Not what you are looking for?",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const Text("Select from the list below"),
+                  ],
+                ),
+              ),
+              IconButton(onPressed: (){pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);}, icon: Icon(Icons.compare_arrows,))
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Showing results for:",
+            style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          Text(animeModel.title.english ?? animeModel.title.romaji ?? animeModel.title.native ?? "NULL",maxLines: 2,overflow: TextOverflow.ellipsis,),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 100,
+            child: searchedAnimes == null ? const Center(child: Text("No results")) : ListView.builder(
+              itemCount: searchedAnimes.animes.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                final anime = searchedAnimes.animes[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: MaterialButton(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    onPressed: () {
+                      onSelect(anime);
+                      pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.ease,
+                      );
+                    },
+                    child: Container(
+                      height: 100,
+                      width: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                          colors: [
+                            Theme.of(context).colorScheme.primary.withAlpha(100),
+                            Theme.of(context).colorScheme.surface,
+                          ]
+                        ),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withAlpha(100),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              anime.img ?? "",
+                              fit: BoxFit.cover,
+                              width: 70,
+                              height: 100,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              anime.name ?? "",
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppCubit,AppModel?>(
       builder: (context,state) {
         return Scaffold(
-          body: widget.animeModel != null ? FutureBuilder(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            forceMaterialTransparency: true,
+            leading: IconButton(onPressed: ()=>Navigator.pop(context), icon: Icon(Icons.arrow_back_ios)),
+          ),
+          body: widget.animeModel != null && widget.preferedAnime == null ? FutureBuilder(
             future: searchedAnimes,
             builder: (context,snapshot) {
               if(snapshot.hasData){
@@ -74,7 +202,9 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                   children: [
                     SizedBox(
                       height: MediaQuery.of(context).size.height*0.4,
-                      child: Stack(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: NeverScrollableScrollPhysics(),
                         children: [
                           BannerDetails(
                             animeModel: widget.animeModel!,
@@ -86,16 +216,19 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                             },
                             watchHistory: widget.watchHistory,
                             watchHistoryFuture: watchHistory,
+                            onComparePress: (){
+                              _pageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+                            },
                             appModel: state!,
                           ),
-                          Column(
-                            children: [
-                              AppBar(
-                                forceMaterialTransparency: true,
-                                leading: IconButton(onPressed: ()=>Navigator.pop(context), icon: Icon(Icons.arrow_back_ios)),
-                              ),
-                              Expanded(child: Container())
-                            ],
+                          manualSelect(
+                            context: context,
+                            searchedAnimes: snapshot.data,
+                            animeModel: widget.animeModel!,
+                            onSelect: (selectedAnime){
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: widget.animeModel,preferedAnime: selectedAnime,searchedAnimes: snapshot.data,)));
+                            },
+                            pageController: _pageController
                           )
                         ],
                       ),
@@ -120,7 +253,46 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                 );
               }
             }
-          ) : widget.watchHistory != null ? FutureBuilder(
+          ): widget.animeModel != null && widget.preferedAnime!=null ? Expanded(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height*0.4,
+                  child: PageView(
+                    physics: NeverScrollableScrollPhysics(),
+                    children: [
+                      BannerDetails(
+                        animeModel: widget.animeModel!,
+                        searchedAnimeName: widget.preferedAnime?.name ?? "",
+                        isInServer: false,
+                        anime: widget.preferedAnime!,
+                        onPressedContinue: (){
+                          //episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
+                        },
+                        watchHistory: widget.watchHistory,
+                        watchHistoryFuture: watchHistory,
+                        onComparePress: (){},
+                        appModel: state!,
+                      ),
+                      manualSelect(
+                          context: context,
+                          searchedAnimes: widget.searchedAnimes,
+                          animeModel: widget.animeModel!,
+                          onSelect: (selectedAnime){
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: widget.animeModel,preferedAnime: selectedAnime,searchedAnimes: widget.searchedAnimes,)));
+                          },
+                          pageController: _pageController
+                      ),
+
+                    ]
+                  ),
+                ),
+                Expanded(
+                  child: detailsPages(pageIndex, widget.animeModel!, widget.preferedAnime!,watchHistory),
+                )
+              ],
+            ),
+          ): widget.watchHistory != null ? FutureBuilder(
               future: anilistAnimeDetails,
               builder: (context,snapshot){
                 if(snapshot.hasData){
@@ -141,17 +313,9 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                               onPressedContinue: widget.watchHistory != null ?() {
                                 episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
                               } : null,
+                              onComparePress: (){},
                               appModel: state!,
                             ),
-                            Column(
-                              children: [
-                                AppBar(
-                                  forceMaterialTransparency: true,
-                                  leading: IconButton(onPressed: ()=>Navigator.pop(context), icon: Icon(Icons.arrow_back_ios)),
-                                ),
-                                Expanded(child: Container())
-                              ],
-                            )
                           ],
                         ),
                       ),
@@ -190,30 +354,18 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                         children: [
                           SizedBox(
                             height: MediaQuery.of(context).size.height*0.4,
-                            child: Stack(
-                              children: [
-                                BannerDetails(
-                                    animeModel: snapshot.data!,
-                                    searchedAnimeName: bestMatch?.name ?? "",
-                                    isInServer: false,
-                                    anime: bestMatch!,
-                                    watchHistory: widget.watchHistory,
-                                    watchHistoryFuture: watchHistory,
-                                    onPressedContinue: widget.watchHistory != null ?() {
-                                      episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
-                                    } : null,
-                                    appModel: state!,
-                                ),
-                                Column(
-                                  children: [
-                                    AppBar(
-                                      forceMaterialTransparency: true,
-                                      leading: IconButton(onPressed: ()=>Navigator.pop(context), icon: Icon(Icons.arrow_back_ios)),
-                                    ),
-                                    Expanded(child: Container())
-                                  ],
-                                )
-                              ],
+                            child: BannerDetails(
+                              animeModel: snapshot.data!,
+                              searchedAnimeName: bestMatch?.name ?? "",
+                              isInServer: false,
+                              anime: bestMatch!,
+                              watchHistory: widget.watchHistory,
+                              watchHistoryFuture: watchHistory,
+                              onPressedContinue: widget.watchHistory != null ?() {
+                                episodes = AniWatchService().getEpisodes(widget.watchHistory!.anime!.aniwatchId!);
+                              } : null,
+                              onComparePress: (){},
+                              appModel: state!,
                             ),
                           ),
                           Expanded(

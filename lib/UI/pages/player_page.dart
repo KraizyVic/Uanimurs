@@ -10,6 +10,7 @@ import 'package:uanimurs/Logic/models/ani_watch_model.dart';
 import 'package:uanimurs/Logic/models/anime_model.dart';
 import 'package:uanimurs/Logic/services/supabase_services.dart';
 import 'package:uanimurs/UI/custom_widgets/pages_items/player_page_items.dart';
+import 'package:uanimurs/UI/custom_widgets/widgets.dart';
 import 'package:uanimurs/UI/pages/buffer_page.dart';
 import 'package:uanimurs/Database/constants.dart';
 import 'package:video_player/video_player.dart';
@@ -60,7 +61,7 @@ class _PlayerPageState extends State<PlayerPage> {
   Timer? _subtitleTimer;
   bool _showControls = false;
   Timer? _hideTimer;
-  bool _isFullScreen = false;
+  final bool _isFullScreen = false;
   int isSelectedSubtitleIndex = 0;
   int selectedQualityIndex = 0;
   int elapsedTime = 0;
@@ -68,6 +69,12 @@ class _PlayerPageState extends State<PlayerPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late Future <Episodes> episodes ;
+  bool _hasTriggeredNext = false;
+
+  bool _introSkipped = false;
+  bool _outroSkipped = false;
+
+
 
   @override
   void initState() {
@@ -101,6 +108,9 @@ class _PlayerPageState extends State<PlayerPage> {
 
 
   Future<void> _initializeVideoPlayer(String videoUrl,int elapsedTime) async {
+    _introSkipped = false;
+    _outroSkipped = false;
+
     _controller = VideoPlayerController.networkUrl(
       Uri.parse(videoUrl),
       httpHeaders: {
@@ -116,11 +126,24 @@ class _PlayerPageState extends State<PlayerPage> {
         await _controller.seekTo(Duration(milliseconds: elapsedTime));
         await _controller.setVolume(1);
         await _controller.play();
+
+        // Force skip if intro starts at 0
+        final introStart = widget.streamingLink.intro?.start ?? 0;
+        final introEnd = Duration(seconds: widget.streamingLink.intro?.end ?? 0);
+
+        if (_shouldSkipIntroOutro && introStart == 0 && !_introSkipped) {
+          await _controller.seekTo(introEnd);
+          _introSkipped = true;
+        }
       });
     await _controller.play();
     _fetchSubtitles(widget.streamingLink.tracks!.firstWhere((t) => t.trackDefault ?? false, orElse: () => widget.streamingLink.tracks!.first).file ?? "");
     // Listen for video playback state changes
     _controller.addListener(() {
+
+      final pos = _controller.value.position;
+      final duration = _controller.value.duration;
+
       if (_controller.value.isPlaying && !_isWakeLockEnabled) {
         WakelockPlus.enable(); // Enable wake lock when video starts playing
         setState(() {
@@ -132,7 +155,60 @@ class _PlayerPageState extends State<PlayerPage> {
           _isWakeLockEnabled = false;
         });
       }
+      // ⏭️ Auto skip intro
+      final introStart = Duration(seconds: widget.streamingLink.intro?.start ?? 0);
+      final introEnd = Duration(seconds: widget.streamingLink.intro?.end ?? 0);
+      if (_shouldSkipIntroOutro && !_introSkipped && pos >= introStart && pos <= introEnd) {
+        _controller.seekTo(introEnd);
+        _introSkipped = true;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar(context: context, message: "INTRO skipped",duration: 3000,width: 200,color: Colors.grey,padding: EdgeInsets.symmetric(horizontal: 8,vertical: 10)));
+      }
+
+      // ⏭️ Auto skip outro
+      final outroStart = Duration(seconds: widget.streamingLink.outro?.start ?? 0);
+      final outroEnd = Duration(seconds: widget.streamingLink.outro?.end ?? 0);
+      if (_shouldSkipIntroOutro && !_outroSkipped && pos >= outroStart && pos <= outroEnd) {
+        _controller.seekTo(outroEnd);
+        _outroSkipped = true;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar(context: context, message: "OUTRO skipped",duration: 3000,width: 200,color: Colors.grey,padding: EdgeInsets.symmetric(horizontal: 8,vertical: 10)));
+      }
+
+      // 📺 Next episode auto-play
+      if (pos >= duration && !_controller.value.isPlaying && !_hasTriggeredNext) {
+        _hasTriggeredNext = true;
+        _handleNextEpisode(); // your function to go next
+      }
     });
+  }
+
+  bool get _shouldSkipIntroOutro {
+    final settings = context.read<AppCubit>().state!.settings.player;
+    return settings.skipItroOutro;
+  }
+
+
+  void _handleNextEpisode() {
+    if(context.read<AppCubit>().state!.settings.player.autoPlay){
+      if (widget.episodes != null && widget.episodeNumber < widget.episodes!.episodes.length - 1  ) {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BufferPage(
+                episodeId: widget.episodes!.episodes[widget.episodeNumber + 1].episodeId,
+                serverName: widget.serverName,
+                type: "sub",
+                episodeNumber: widget.episodeNumber + 1,
+                episodes: widget.episodes!,
+                anime: widget.anime,
+                animeModel: widget.animeModel,
+                isInWatchHistory: widget.isInWatchHistory,
+                watchHistory: widget.watchHistory,
+                isContinuePress: false,
+              ),
+            )
+        );
+      }
+    }
   }
 
 
@@ -291,14 +367,22 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
         );
       }else{
+        debugPrint(widget.watchHistory?.supabaseId.toString());
         WatchHistoryService().updateWatchHistory(
-          watchHistory: widget.watchHistory!.copyWith(
+          watchHistory: WatchHistory(
+            supabaseId: widget.watchHistory?.supabaseId,
+            anilistId: widget.animeModel.alId,
+            anime: widget.anime,
+            name: widget.anime.name,
+            image: widget.anime.img,
             watchTime: _controller.value.position.inMilliseconds,
             totalTime: _controller.value.duration.inMilliseconds,
             lastWatched: DateTime.now(),
             streamingLink: widget.streamingLink,
+            watchedEpisodes: [],
             watchingEpisode: widget.episodeNumber + 1,
-          ),
+            totalEpisodes: widget.episodes?.totalEpisodes ?? 0,
+          )
         );
       }
     }else{
@@ -523,7 +607,7 @@ class _PlayerPageState extends State<PlayerPage> {
                             aspectRatio: aspectRatios(context)[aspectRatioIndex]["value"] == 0 ? _controller.value.aspectRatio : aspectRatios(context)[aspectRatioIndex]["value"],
                             child: VideoPlayer(_controller)
                         )
-                        ) : Center(child: CircularProgressIndicator()),
+                      ) : Center(child: CircularProgressIndicator()),
                       isPaused ? Center(
                         child: _controller.value.isBuffering ? Container() : CircularProgressIndicator(),
                       ) : Center(
@@ -591,6 +675,56 @@ class _PlayerPageState extends State<PlayerPage> {
                           ),*/
                         ],
                       ),
+
+                      !context.read<AppCubit>().state!.settings.player.skipItroOutro && _controller.value.position >= Duration(seconds: widget.streamingLink.intro!.start!) && _controller.value.position <= Duration(seconds: widget.streamingLink.intro!.end!) ? Align(
+                        alignment: Alignment(0.8, 0.8),
+                        child: MaterialButton(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          onPressed: (){
+                            _controller.seekTo(Duration(seconds: widget.streamingLink.intro!.end!));
+                          },
+                          child: AnimatedContainer(
+                            padding: EdgeInsets.all(10),
+                            duration: Duration(milliseconds: 1000,),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            child: Text(
+                              "Skip Intro",
+                              style: TextStyle(color: Colors.white,fontSize: 18),
+                              textAlign: TextAlign.center,
+                            )
+                          ),
+                        )
+                      ): Container(),
+                      !context.read<AppCubit>().state!.settings.player.skipItroOutro && _controller.value.position >= Duration(seconds: widget.streamingLink.outro!.start!) && _controller.value.position <= Duration(seconds: widget.streamingLink.outro!.end!) ? Align(
+                        alignment: Alignment(0.8, 0.8),
+                        child: MaterialButton(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          onPressed: (){
+                            _controller.seekTo(Duration(seconds: widget.streamingLink.outro!.end!));
+                          },
+                          child: AnimatedContainer(
+                              padding: EdgeInsets.all(10),
+                              duration: Duration(milliseconds: 1000,),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            child: Text(
+                              "Skip Outro",
+                              style: TextStyle(color: Colors.white,fontSize: 18),
+                              textAlign: TextAlign.center,
+                            )
+                          ),
+                        )
+                      ): Container(),
+
                       !_showControls && isPaused  ? Center(
                         child: GestureDetector(
                           onTap: (){

@@ -8,6 +8,7 @@ import 'package:uanimurs/Logic/services/anilist_service.dart';
 import 'package:uanimurs/Logic/services/supabase_services.dart';
 import 'package:uanimurs/UI/pages/anime_details_page.dart';
 import 'package:uanimurs/UI/pages/auth_page.dart';
+import 'package:uanimurs/UI/pages/view_all.dart';
 
 import '../../Logic/bloc/app_cubit.dart';
 import '../../Logic/models/anime_model.dart';
@@ -166,12 +167,22 @@ class _HomepageState extends State<Homepage> {
                        crossAxisAlignment: CrossAxisAlignment.start,
                        children: [
                          Padding(
-                           padding: const EdgeInsets.all(8.0),
+                           padding: const EdgeInsets.symmetric(horizontal: 8),
                            child: Row(
-                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                              children: [
                                Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                               SizedBox(width: 10),
                                Text("server",style: TextStyle(color: Colors.green,fontSize: 15),),
+                               Spacer(),
+                               TextButton(
+                                 onPressed: (){
+                                   Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAll(isStream: true,stream: WatchHistoryService().fetchWatchHistory(),isFromSupabase: true,title: "All server history",)));
+                                 },
+                                 style: ButtonStyle(
+                                   padding: WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: 10,)),
+                                 ),
+                                 child: Text("View all")
+                               ),
                              ],
                            ),
                          ),
@@ -194,12 +205,10 @@ class _HomepageState extends State<Homepage> {
                                  List<WatchHistory> watchHistory = snapshot.data!;
                                  watchHistory.sort((a,b) => b.lastWatched!.compareTo(a.lastWatched!));
                                  return ListView.builder(
-                                     itemCount: watchHistory.length,
+                                     itemCount: watchHistory.length > 10 ? 10 : watchHistory.length,
                                      scrollDirection: Axis.horizontal,
                                      itemBuilder: (context,index) {
                                        return WatchHistoryTile(watchHistory: watchHistory[index],);
-                                       //return Container(width: 240,color: Colors.red,);
-                                       //return WatchHistoryTile(watchHistory: watchHistory[index],);
                                      }
                                  );
                                }
@@ -212,17 +221,26 @@ class _HomepageState extends State<Homepage> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text("Continue:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
                             Text("local",style: TextStyle(color: Colors.green,fontSize: 15),),
+                            Spacer(),
+                            TextButton(
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAll(isFromLocal: true,title: "All local history",)));
+                                },
+                                style: ButtonStyle(
+                                  padding: WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: 10,)),
+                                ),
+                                child: Text("View all")
+                            ),
                           ],
                         ),
                       ),
                       SizedBox(
                         height: 120,
                         child : ListView.builder(
-                          itemCount: state.watchHistory.length,
+                          itemCount: state.watchHistory.length > 10 ? 10 : state.watchHistory.length,
                           scrollDirection: Axis.horizontal,
                           itemBuilder: (context,index) {
                             List<WatchHistory> watchHistory = state.watchHistory.toList();
@@ -233,88 +251,175 @@ class _HomepageState extends State<Homepage> {
                       )
                     ]
                   ): Container(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
-                  ),
                   SizedBox(
-                    height: 200,
+                    height: 250,
                     child: FutureBuilder(
                       future: topRatedAnimes,
                       builder: (context,snapshot) {
                         if(snapshot.hasData) {
-                          return ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context,index){
-                                return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
-                              }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                                    TextButton(onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAll(items: snapshot.data!,title: "Top Rated"))), child: Text("View all"))
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                    itemCount: snapshot.data!.length > 15 ? 15 : snapshot.data!.length ,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context,index){
+                                      return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
+                                    }
+                                ),
+                              ),
+                            ],
                           );
                         }else if(snapshot.hasError) {
                           return Center(
-                            child: ErrorMessage(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                                ),
+                                ErrorMessage(),
+                              ],
+                            ),
                           );
                         }else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Top Rated:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                              ),
+                              Expanded(
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            ],
                           );
                         }
                       }
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text("Popular:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
-                  ),
                   SizedBox(
-                    height: 200,
+                    height: 250,
                     child: FutureBuilder(
                       future: popularAnimes,
                       builder: (context,snapshot) {
                         if(snapshot.hasData) {
-                          return ListView.builder(
-                              itemCount: snapshot.data!.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context,index){
-                                return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
-                              }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Popular:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                                    TextButton(onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAll(items: snapshot.data!,title: "Popular",))), child: Text("View all"))
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                    itemCount: snapshot.data!.length > 15 ? 15 : snapshot.data!.length,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context,index){
+                                      return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
+                                    }
+                                ),
+                              ),
+                            ],
                           );
                         }else if(snapshot.hasError) {
-                          return Center(
-                            child: ErrorMessage(),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Popular:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                              ),
+                              ErrorMessage(),
+                            ],
                           );
                         }else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Popular:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                              ),
+                              Expanded(child: Center(child: CircularProgressIndicator())),
+                            ],
                           );
                         }
                       }
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text("Releasing:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
-                  ),
                   SizedBox(
-                    height: 200,
+                    height: 250,
                     child: FutureBuilder(
                       future: releasingAnimes,
                       builder: (context,snapshot) {
                         if(snapshot.hasData) {
-                          return ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context,index){
-                              return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
-                            }
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Releasing:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                                    TextButton(onPressed: ()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAll(items: snapshot.data!,title: "Releasing",))), child: Text("View all"))
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: snapshot.data!.length > 15 ? 15 : snapshot.data!.length,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context,index){
+                                    return AnimeTile(animeModel: snapshot.data![index],onPressed: ()=> Navigator.push(context, MaterialPageRoute(builder: (context)=>AnimeDetailsPage(animeModel: snapshot.data![index]))),);
+                                  }
+                                ),
+                              ),
+                            ],
                           );
                         }else if(snapshot.hasError) {
                           return Center(
-                            child: ErrorMessage(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Releasing:",style: TextStyle(color: Theme.of(context).colorScheme.primary,fontSize: 20,fontWeight: FontWeight.bold),),
+                                ),
+                                Expanded(child: ErrorMessage()),
+                              ],
+                            ),
                           );
                         }else {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text("Releasing:",style: TextStyle(color: Colors.green,fontSize: 20,fontWeight: FontWeight.bold),),
+                              ),
+                              Expanded(child: Center(child: CircularProgressIndicator())),
+                            ],
                           );
                         }
                       }

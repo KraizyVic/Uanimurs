@@ -67,10 +67,12 @@ class AppearanceSettings {
 @embedded
 class GeneralSettings {
   final int defaultServer;
+  final int defaultList;
   final int layoutType;
   // Constructor with default values
   const GeneralSettings({
-    this.defaultServer = 0,  // 0 = Vidstreaming, 1 = Vidsrc
+    this.defaultServer = 0, // 0 = Vidstreaming, 1 = Vidsrc
+    this.defaultList = 0,
     this.layoutType = 0,  // 0 = GridView, 1 = ListView
   });
 
@@ -115,23 +117,31 @@ class SubtitleSettings {
 
 @embedded
 class PlayerSettings {
-  final int skipDuration;
-  final int megaSkipDuration;
+  final double skipDuration;
+  final double megaSkipDuration;
+  final bool autoPlay;
+  final bool skipItroOutro;
 
   // Constructor with default values
   const PlayerSettings({
-    this.skipDuration = 10,  // seconds
-    this.megaSkipDuration = 60,  // seconds
+    this.skipDuration = 0.1,  // seconds
+    this.megaSkipDuration = 0.6,  // seconds
+    this.autoPlay = false,
+    this.skipItroOutro = false
   });
 
   // CopyWith method
   PlayerSettings copyWith({
-    int? skipDuration,
-    int? megaSkipDuration,
+    double? skipDuration,
+    double? megaSkipDuration,
+    bool? autoPlay,
+    bool? skipItroOutro,
   }) {
     return PlayerSettings(
       skipDuration: skipDuration ?? this.skipDuration,
       megaSkipDuration: megaSkipDuration ?? this.megaSkipDuration,
+      autoPlay: autoPlay ?? this.autoPlay,
+      skipItroOutro: skipItroOutro ?? this.skipItroOutro,
     );
   }
 }

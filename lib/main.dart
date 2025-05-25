@@ -14,6 +14,7 @@ import 'package:uanimurs/UI/pages/welcome_page.dart';
 
 import 'Logic/bloc/app_cubit.dart';
 import 'Logic/models/anime_model.dart';
+import 'Logic/services/aniwatch_services.dart';
 import 'Logic/services/update_service.dart';
 import 'UI/custom_widgets/bottom_nav_bar_pages.dart';
 
@@ -103,7 +104,7 @@ class _MyAppState extends State<MyApp> {
               statusBarColor: Colors.transparent,
               systemNavigationBarColor: Colors.transparent,
             ),
-            child: state.isFirstTime ? WelcomePage() : AuthenticationGate(),
+            child: AuthenticationGate(),
           ),
           debugShowCheckedModeBanner: false,
         );
@@ -120,19 +121,86 @@ class AuthenticationGate extends StatefulWidget {
 }
 
 class _AuthenticationGateState extends State<AuthenticationGate> {
+
+  late Future pingApp ;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    pingApp = AniWatchService().pingApp();
     BlocProvider.of<AppCubit>(context).authState(isLoggedIn: Supabase.instance.client.auth.currentUser != null);
   }
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<AuthState>(
-      stream: Supabase.instance.client.auth.onAuthStateChange,
-      builder: (context, snapshot) {
-        return MainPage(); // render UI, separate from side effects
-      },
+    return FutureBuilder(
+      future: pingApp,
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("lib/Database/assets/hellow.png",width: 100,),
+                  SizedBox(height: 10),
+                  SizedBox(width: 100,child: LinearProgressIndicator()),
+                ],
+              ),
+            ),
+          );
+        }
+        if (asyncSnapshot.hasError) {
+          //ScaffoldMessenger(child: SnackBar(content: Text("Error Loading Check your internet connection and try again later")));
+          return Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Error !",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),),
+                  SizedBox(height: 10,),
+                  Text("Error Loading Check your internet connection and RETRY"),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Icon(Icons.error_outline,color: Theme.of(context).colorScheme.primary,),
+                      SizedBox(width: 10,),
+                      Expanded(child: Text(asyncSnapshot.error.toString(),style: TextStyle(color: Theme.of(context).colorScheme.primary),)),
+
+                    ],
+                  ),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Spacer(),
+                      ElevatedButton(
+                          onPressed: (){
+                            setState(() {
+                              pingApp = AniWatchService().pingApp();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.tertiary
+                          ),
+                          child: Text("Retry")
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+        return StreamBuilder<AuthState>(
+          stream: Supabase.instance.client.auth.onAuthStateChange,
+          builder: (context, snapshot) {
+            return MainPage(); // render UI, separate from side effects
+          },
+        );
+      }
     );
   }
 }

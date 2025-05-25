@@ -36,6 +36,7 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      extendBodyBehindAppBar: false,
       body: Center(
         child: CustomScrollView(
           slivers: [
@@ -55,10 +56,6 @@ class _AboutPageState extends State<AboutPage> {
                     title: Text("App name"),
                     trailing: Text(appName),
                   ),
-                  /*ListTile(
-                    title: Text("Number of accounts"),
-                    trailing: Text("Null"),
-                  ),*/
                   ListTile(
                     title: Text("App version"),
                     trailing: Text(appVersion),
@@ -117,7 +114,7 @@ class _AboutPageState extends State<AboutPage> {
                     },
                     child: Text("Check for updates")
                   ),
-                  SizedBox(height: 100,),
+                  SizedBox(height: 150,),
                 ]
               )
             )

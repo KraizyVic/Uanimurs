@@ -62,9 +62,7 @@ class AppCubit extends Cubit<AppModel?> {
   }
 
   // ========== SETTINGS CORE ==========
-  Future<void> updateSettings(
-      SettingsModel Function(SettingsModel old) update,
-      ) async {
+  Future<void> updateSettings(SettingsModel Function(SettingsModel old) update,) async {
     final old = state!;
     final newSettings = update(old.settings);
     final updated = old.copyWith(settings: newSettings);
@@ -83,8 +81,7 @@ class AppCubit extends Cubit<AppModel?> {
   }
 
   Future<void> updateAmoledBackground(bool value) async {
-    await updateSettings(
-          (s) => s.copyWith(appearance: s.appearance.copyWith(amoledBackground: value)),
+    await updateSettings((s) => s.copyWith(appearance: s.appearance.copyWith(amoledBackground: value)),
     );
   }
 
@@ -310,60 +307,22 @@ class AppCubit extends Cubit<AppModel?> {
     });
     emit(model);
   }
+
+  // ========== UPDATE PLAYER SETTINGS ==========
+  Future<void> updateSkipDuration(double skipDuration) async {
+    await updateSettings((settings)=> settings.copyWith(player: settings.player.copyWith(skipDuration: skipDuration)));
+  }
+
+  Future<void> updateMegaSkipDuration(double megaSkipDuration) async {
+    await updateSettings((settings)=> settings.copyWith(player: settings.player.copyWith(megaSkipDuration: megaSkipDuration)));
+  }
+
+  Future<void> updateAutoPlay(bool autoPlay) async {
+    await updateSettings((settings)=> settings.copyWith(player: settings.player.copyWith(autoPlay: autoPlay)));
+  }
+
+  Future<void> updateSkipItroOutro(bool skipItroOutro) async {
+    await updateSettings((settings)=> settings.copyWith(player: settings.player.copyWith(skipItroOutro: skipItroOutro)));
+  }
+
 }
-
-/*
-
-// ================== APPEARANCE SETTINGS ====================
-
-  Future<void> updateSettings(
-      SettingsModel Function(SettingsModel old) update,
-      ) async {
-    final old = state!;
-    final newSettings = update(old.settings);
-    final updatedAppModel = AppModel(
-      settings: newSettings,
-      searchHistory: old.searchHistory,
-    );
-
-    await isar.writeTxn(() async {
-      await isar.appModels.put(updatedAppModel);
-    });
-
-    emit(updatedAppModel);
-  }
-
-  Future<void> updateThemeMode(int value) async {
-    await updateSettings((settings) =>
-        settings.copyWith(
-          appearance: settings.appearance.copyWith(themeMode: value),
-        ),
-    );
-  }
-  Future<void> updateAmoledBackground(bool value) async {
-    await updateSettings((settings) =>
-      settings.copyWith(
-        appearance: settings.appearance.copyWith(amoledBackground: value),
-      ),
-    );
-  }
-  Future<void> useMaterualU(bool value) async {
-    await updateSettings((settings) =>
-      settings.copyWith(
-        appearance: settings.appearance.copyWith(useMaterialUI: value),
-      ),
-    );
-  }
-  Future<void> updatePrimaryColor(int value) async {
-    await updateSettings((settings) =>
-      settings.copyWith(
-        appearance: settings.appearance.copyWith(primaryColor: value),
-      ),
-    );
-  }
-
-  // ================== SUBTITLE SETTINGS ====================
-
-*/
-
-

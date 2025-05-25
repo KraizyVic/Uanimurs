@@ -24,6 +24,7 @@ class BannerDetails extends StatefulWidget {
   final VoidCallback? onPressedContinue;
   final WatchHistory? watchHistory;
   final Future<WatchHistory> watchHistoryFuture;
+  final VoidCallback onComparePress;
   final AppModel appModel;
   const BannerDetails({
     super.key,
@@ -34,6 +35,7 @@ class BannerDetails extends StatefulWidget {
     this.onPressedContinue,
     this.watchHistory,
     required this.watchHistoryFuture,
+    required this.onComparePress,
     required this.appModel
   });
 
@@ -46,14 +48,14 @@ class _BannerDetailsState extends State<BannerDetails> {
   late Future<Episodes> episodes;
   late Future<WatchHistory> watchHistory;
 
-
+  late String animeName;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     watchHistory = WatchHistoryService().fetchWatchHistoryById(widget.animeModel.alId);
-
+    animeName = widget.animeModel.title.english == "null" ? widget.animeModel.title.romaji ?? "" : widget.animeModel.title.english ?? "";
   }
   @override
   Widget build(BuildContext context) {
@@ -81,7 +83,15 @@ class _BannerDetailsState extends State<BannerDetails> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Spacer(),
-                Text("Found: ${widget.searchedAnimeName}"),
+                Row(
+                  children: [
+                    Expanded(child: Text("Found: ${widget.searchedAnimeName}")),
+                    IconButton(
+                      onPressed: widget.onComparePress,
+                      icon: Icon(Icons.compare_arrows,)
+                    )
+                  ],
+                ),
                 SizedBox(height: 5,),
                 Row(
                   children: [
@@ -93,6 +103,11 @@ class _BannerDetailsState extends State<BannerDetails> {
                           child: PageView(
                             scrollDirection: Axis.vertical,
                             physics: AlwaysScrollableScrollPhysics(),
+                            onPageChanged: (index){
+                              setState(() {
+                                animeName = index == 1 ? widget.anime.name! : widget.animeModel.title.english == "null" ? widget.animeModel.title.romaji ?? "" : widget.animeModel.title.english ?? "";
+                              });
+                            },
                             children: [
                               Image.network(widget.animeModel.coverImage.extraLarge ?? "",fit: BoxFit.cover,height: 150,width: 100,),
                               Image.network(widget.anime.img ?? "",fit: BoxFit.cover,height: 150,width: 100,),
@@ -106,10 +121,9 @@ class _BannerDetailsState extends State<BannerDetails> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 5,),
-                          Text(widget.animeModel.title.english != "null" ? widget.animeModel.title.english?.toUpperCase() ?? "" : widget.animeModel.title.romaji?.toUpperCase() ?? "", maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
+                          Text(animeName, maxLines: 3, overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Theme.of(context).colorScheme.primary),),
                           SizedBox(height: 5,),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Supabase.instance.client.auth.currentSession == null && widget.appModel.watchHistory.any((element) => element.anilistId == widget.animeModel.alId) ? Expanded(
                                 child: customTextButton(
@@ -117,11 +131,11 @@ class _BannerDetailsState extends State<BannerDetails> {
                                   onTap: (){
                                     episodes = AniWatchService().getEpisodes(widget.anime.aniwatchId ?? "");
                                     showEpisodeModal(
-                                        context: context,
-                                        episodes: episodes,
-                                        anime: widget.anime,
-                                        animeModel: widget.animeModel,
-                                        watchHistory: BlocProvider.of<AppCubit>(context).state?.watchHistory.firstWhere((element) => element.anilistId == widget.animeModel.alId),
+                                      context: context,
+                                      episodes: episodes,
+                                      anime: widget.anime,
+                                      animeModel: widget.animeModel,
+                                      watchHistory: BlocProvider.of<AppCubit>(context).state?.watchHistory.firstWhere((element) => element.anilistId == widget.animeModel.alId),
                                     );
                                   },
                                   buttonName: "Continue"
@@ -231,7 +245,7 @@ class _BannerDetailsState extends State<BannerDetails> {
                                             episodes: episodes,
                                             anime: widget.anime,
                                             animeModel: widget.animeModel,
-                                            watchHistory: null,
+                                            watchHistory: asyncSnapshot.data,
                                             isInWatchHistory: true,
                                           );
                                         },

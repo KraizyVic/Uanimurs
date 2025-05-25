@@ -32,17 +32,21 @@ class CustomIconTextButton extends StatelessWidget {
   final Icon icon;
   final String buttonName;
   final VoidCallback onTap;
+  final bool? isFilled;
   const CustomIconTextButton({
     super.key,
     required this.icon,
     required this.buttonName,
-    required this.onTap
+    required this.onTap,
+    this.isFilled = false ,
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
       onPressed: onTap,
+      elevation: 0,
+      color: isFilled! ? Theme.of(context).colorScheme.primary.withAlpha(150) : Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10)
       ),
@@ -57,7 +61,14 @@ class CustomIconTextButton extends StatelessWidget {
   }
 }
 
-Widget buttonWithCenterIcon(IconData icon,VoidCallback onTap, {bool isActive = true}) => MaterialButton(
+Widget buttonWithCenterIcon(
+    IconData icon,
+    VoidCallback onTap,
+    {
+      bool isActive = true,
+      Widget? child,
+    }
+    ) => MaterialButton(
   padding: EdgeInsets.all(0),
   minWidth: 55,
   height: 55,
@@ -66,7 +77,13 @@ Widget buttonWithCenterIcon(IconData icon,VoidCallback onTap, {bool isActive = t
       borderRadius: BorderRadius.circular(10)
   ),
   onPressed: onTap,
-  child: Icon(icon,color: isActive ? Colors.white : Colors.white.withOpacity(0.5),size: 40)
+  child: child == null ? Icon(icon,color: isActive ? Colors.white : Colors.white.withOpacity(0.5),size: 40) :
+      Row(
+        children: [
+          Icon(icon,color: isActive ? Colors.white : Colors.white.withOpacity(0.5),size: 40),
+          child
+        ],
+      ),
 );
 
 

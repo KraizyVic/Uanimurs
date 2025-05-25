@@ -369,7 +369,7 @@ void showFirstEpisodeModal({
                                             episodes: snapshot.data!,
                                             anime: anime,
                                             animeModel: animeModel,
-                                            watchHistory: null,
+                                            watchHistory: watchHistory,
                                             isInWatchHistory: isInWatchHistory,
                                           )
                                         )
