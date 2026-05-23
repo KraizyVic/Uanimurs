@@ -5,7 +5,7 @@ An anime streaming app made entirely with flutter
 ### Features:
 1. Beautiful and intuitive UI
 2. Customisation
-3. Supports ACCOUNT CRUD stuff ("Locally for Supabase account and locally for UN-LOGGED IN USERS") Fancy stuff coming soon
+3. Supports ACCOUNT CRUD (Online for Supabase account and locally for UN-LOGGED IN USERS") Fancy stuff coming soon
 4. Has an internal Update mechanism - From Github
 5. Has search functionality - Powered by Anilist
 
@@ -55,5 +55,5 @@ samples, guidance on mobile development, and a full API reference.
 
 ## For any issues feel free to open an issue up top
 
-Enjwoy
+Enjoy
 
